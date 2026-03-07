@@ -1,4 +1,4 @@
-package io.nexstudios.nexlogic.bukkit.services.mvptypes;
+package io.nexstudios.nexlogic.bukkit.services.mvp;
 
 import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
 import io.nexstudios.nexlogic.common.types.conditions.PermissionConditionType;

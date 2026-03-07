@@ -10,7 +10,7 @@ import io.nexstudios.nexlogic.bukkit.services.config.DefaultConfigPathService;
 import io.nexstudios.nexlogic.bukkit.services.jointrigger.JoinTriggerListenerService;
 import io.nexstudios.nexlogic.common.services.executor.DefaultMainThreadExecutorService;
 import io.nexstudios.nexlogic.common.services.executor.MainThreadExecutorService;
-import io.nexstudios.nexlogic.bukkit.services.mvptypes.BukkitMvpTypesService;
+import io.nexstudios.nexlogic.bukkit.services.mvp.BukkitMvpTypesService;
 import io.nexstudios.nexlogic.bukkit.services.command.NexLogicCommandService;
 import io.nexstudios.nexlogic.bukkit.services.reload.DefaultReloadService;
 import io.nexstudios.nexlogic.bukkit.services.reload.ReloadService;

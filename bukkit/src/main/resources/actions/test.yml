@@ -1,0 +1,107 @@
+# File: plugins/NexLogic/actions/effect_system_test.yml
+# Loaded as "Style-1 pack":
+# - enabled: true
+# - test.effects: list of effect entries
+
+enabled: true
+
+test:
+  effects:
+    # 1) LOG effect: simplest possible (no conditions/filters)
+    # Trigger: join (exists in the project; fired by JoinTriggerListenerService)
+    - id: log
+      triggers:
+        - join
+      conditions: []
+      filters: {}
+      args:
+        message: "TEST[1] join -> log (no conditions/filters)"
+
+    # 2) MESSAGE effect: join -> message (to the player)
+    - id: message
+      triggers:
+        - join
+      conditions: []
+      filters: {}
+      args:
+        message: "TEST[2] NexLogic: join -> message (you should see this on join)"
+
+    # 3) MESSAGE effect with Permission condition
+    # Only players with this permission will receive the message
+    - id: message
+      triggers:
+        - join
+      conditions:
+        - id: permission
+          args:
+            permission: "nexlogic.admin"
+      filters: {}
+      args:
+        message: "TEST[3] join -> message (requires permission: nexlogic.admin)"
+
+    # 4) LOG effect with Chance condition
+    # Note: chance is a double (0.0 - 1.0), not percent.
+    - id: log
+      triggers:
+        - join
+      conditions:
+        - id: chance
+          args:
+            chance: 0.5
+      filters: {}
+      args:
+        message: "TEST[4] join -> log (50% chance; should not appear every time)"
+
+    # 5) break_block trigger: LOG with filters (blocks + worlds)
+    # Note: filter capabilities are currently defined only for 'break_block'.
+    # For blocks filter to match, ctx vars must include: 'block.type' (lowercase) and 'world'
+    - id: log
+      triggers:
+        - break_block
+      conditions: []
+      filters:
+        blocks:
+          args:
+            blocks:
+              - stone
+              - netherrack
+            inverted: false
+        worlds:
+          args:
+            allow:
+              - world
+              - world_nether
+            deny:
+              - world_the_end
+      args:
+        message: "TEST[5] break_block -> log (blocks/worlds filters; only allowed worlds + stone/netherrack)"
+
+    # 6) break_block trigger: LOG with inverted blocks filter (everything EXCEPT stone)
+    - id: log
+      triggers:
+        - break_block
+      conditions: []
+      filters:
+        blocks:
+          args:
+            blocks:
+              - stone
+            inverted: true
+      args:
+        message: "TEST[6] break_block -> log (blocks inverted: true; fires for all blocks except stone)"
+
+    # 7) break_block trigger: MESSAGE + permission + worlds deny
+    - id: message
+      triggers:
+        - break_block
+      conditions:
+        - id: permission
+          args:
+            permission: "nexlogic.admin"
+      filters:
+        worlds:
+          args:
+            deny:
+              - world_the_end
+      args:
+        message: "TEST[7] break_block -> message (only nexlogic.admin, not in world_the_end)"
