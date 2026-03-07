@@ -114,7 +114,7 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     // Register built-in Bukkit types (conditions/effects/filters)
     services().getService(BukkitBuiltinsService.class).registerAll();
 
-    // Initial load/compile async, then swap atomically
+    // Initial load/compile async, then swap automatically
     services().getService(ReloadService.class).reloadAsync();
 
     getLogger().info("NexLogic started.");
