@@ -1,8 +1,8 @@
 package io.nexstudios.nexlogic.bukkit;
 
 import io.nexstudios.framework.paper.NexPaperPlugin;
-import io.nexstudios.nexlogic.common.services.engine.DefaultNexLogicEngineService;
-import io.nexstudios.nexlogic.common.services.engine.NexLogicEngineService;
+import io.nexstudios.nexlogic.common.services.engine.DefaultLogicEngineService;
+import io.nexstudios.nexlogic.common.services.engine.LogicEngineService;
 import io.nexstudios.nexlogic.common.services.executor.async.AsyncExecutorService;
 import io.nexstudios.nexlogic.common.services.executor.async.DefaultAsyncExecutorService;
 import io.nexstudios.nexlogic.bukkit.services.config.ConfigPathService;
@@ -44,11 +44,12 @@ import io.nexstudios.nexlogic.common.services.triggers.runtime.DefaultTriggerRun
 import io.nexstudios.nexlogic.common.services.triggers.runtime.TriggerRuntimeService;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.NotNull;
 
 public final class NexLogicPlugin extends NexPaperPlugin {
 
   @Override
-  protected void configureServices(ServiceAccessor services) {
+  protected void configureServices(@NotNull ServiceAccessor services) {
     // Core registries and runtime
     services.register(EffectTypeRegistryService.class, DefaultEffectTypeRegistryService.class);
     services.register(ConditionTypeRegistryService.class, DefaultConditionTypeRegistryService.class);
@@ -61,17 +62,13 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     services.register(FilterTypeRegistryService.class, DefaultFilterTypeRegistryService.class);
     services.register(FilterService.class, DefaultFilterService.class);
     services.register(CommonFilterTypesService.class, CommonFilterTypesService.class);
-
     services.register(LogicCompilerService.class, DefaultLogicCompilerService.class);
     services.register(ActionRuntimeService.class, DefaultActionRuntimeService.class);
     services.register(TriggerRuntimeService.class, DefaultTriggerRuntimeService.class);
-
     services.register(TriggerRegistrationService.class, DefaultTriggerRegistrationService.class);
     services.register(TriggerBusService.class, DefaultTriggerBusService.class);
-
     services.register(TriggerRuleRegistryService.class, DefaultTriggerRuleRegistryService.class);
-
-    services.register(NexLogicEngineService.class, DefaultNexLogicEngineService.class);
+    services.register(LogicEngineService.class, DefaultLogicEngineService.class);
 
     // Bukkit-specific
     services.register(MainThreadExecutorService.class, DefaultMainThreadExecutorService.class);

@@ -3,12 +3,11 @@ package io.nexstudios.nexlogic.bukkit.services.reload;
 import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
 import io.nexstudios.nexlogic.common.services.executor.async.AsyncExecutorService;
 import io.nexstudios.nexlogic.bukkit.services.loader.YamlLoaderService;
-import io.nexstudios.nexlogic.common.services.engine.NexLogicEngineService;
+import io.nexstudios.nexlogic.common.services.engine.LogicEngineService;
 import io.nexstudios.serviceregistry.di.Dependencies;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,14 +16,14 @@ import java.util.logging.Logger;
 @Dependencies({
     AsyncExecutorService.class,
     YamlLoaderService.class,
-    NexLogicEngineService.class
+    LogicEngineService.class
 })
 public final class DefaultReloadService implements ReloadService {
 
   private final ServiceAccessor services;
   private final AsyncExecutorService async;
   private final YamlLoaderService loader;
-  private final NexLogicEngineService engine;
+  private final LogicEngineService engine;
   private final Logger logger;
 
   private final Set<String> lastOwners = ConcurrentHashMap.newKeySet();
@@ -33,7 +32,7 @@ public final class DefaultReloadService implements ReloadService {
     this.services = core.plugin().services();
     this.async = services.getService(AsyncExecutorService.class);
     this.loader = services.getService(YamlLoaderService.class);
-    this.engine = services.getService(NexLogicEngineService.class);
+    this.engine = services.getService(LogicEngineService.class);
     this.logger = core.plugin().getLogger();
   }
 

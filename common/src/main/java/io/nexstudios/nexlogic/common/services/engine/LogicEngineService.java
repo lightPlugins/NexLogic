@@ -10,7 +10,7 @@ import java.util.List;
  * Public entry point for other plugins.
  * Contract: Types are identified by "id" and take their parameters only from "args".
  */
-public interface NexLogicEngineService extends Service {
+public interface LogicEngineService extends Service {
 
   boolean testConditions(List<ConfigSection> conditions, LogicContext ctx);
 

@@ -1,5 +1,6 @@
 package io.nexstudios.nexlogic.common.services.engine;
 
+import io.nexstudios.framework.core.key.NexKey;
 import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
 import io.nexstudios.nexlogic.common.config.ConfigSection;
 import io.nexstudios.nexlogic.common.config.MapConfigSection;
@@ -12,18 +13,22 @@ import io.nexstudios.nexlogic.common.services.registry.condition.ConditionTypeRe
 import io.nexstudios.nexlogic.common.services.registry.effect.EffectTypeRegistryService;
 import io.nexstudios.nexlogic.common.services.triggers.register.TriggerRegistrationService;
 import io.nexstudios.serviceregistry.di.Dependencies;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
+/**
+ * A service for managing logic execution using registered conditions, effects, and triggers.
+ */
 @Dependencies({
     ConditionTypeRegistryService.class,
     EffectTypeRegistryService.class,
     FilterService.class,
     TriggerRegistrationService.class,
 })
-public final class DefaultNexLogicEngineService implements NexLogicEngineService {
+public final class DefaultLogicEngineService implements LogicEngineService {
 
   private final ConditionTypeRegistryService conditions;
   private final EffectTypeRegistryService effects;
@@ -31,13 +36,17 @@ public final class DefaultNexLogicEngineService implements NexLogicEngineService
   private final TriggerRegistrationService registrations;
   private final Logger logger;
 
-  public DefaultNexLogicEngineService(PaperPluginService core) {
+  private final String ownerNamespace;
+
+  public DefaultLogicEngineService(PaperPluginService core) {
     var services = core.plugin().services();
     this.conditions = services.getService(ConditionTypeRegistryService.class);
     this.effects = services.getService(EffectTypeRegistryService.class);
     this.filters = services.getService(FilterService.class);
     this.registrations = services.getService(TriggerRegistrationService.class);
     this.logger = core.plugin().getLogger();
+
+    this.ownerNamespace = NexKey.normalizeNamespace(core.plugin().getName());
   }
 
   @Override
@@ -91,8 +100,7 @@ public final class DefaultNexLogicEngineService implements NexLogicEngineService
     boolean firedAny = false;
     String t = triggerId.toLowerCase();
 
-    for (int i = 0; i < effectEntries.size(); i++) {
-      ConfigSection entry = effectEntries.get(i);
+    for (ConfigSection entry : effectEntries) {
       if (entry == null) continue;
 
       if (!containsTrigger(entry.getSectionList("triggers"), t)) continue;
@@ -149,8 +157,7 @@ public final class DefaultNexLogicEngineService implements NexLogicEngineService
     boolean firedAny = false;
     String t = triggerId.toLowerCase();
 
-    for (int i = 0; i < triggerEntries.size(); i++) {
-      ConfigSection triggerEntry = triggerEntries.get(i);
+    for (ConfigSection triggerEntry : triggerEntries) {
       if (triggerEntry == null) continue;
 
       String id = triggerEntry.getString("id", null);
@@ -184,13 +191,61 @@ public final class DefaultNexLogicEngineService implements NexLogicEngineService
     return firedAny;
   }
 
+  private @NotNull String actionIdForEffectBinding(String owner, String effectId, String triggerIdLower) {
+    String safeOwner = sanitizeKeyPath(owner);
+    String safeEffect = sanitizeKeySegment(effectId);
+    String safeTrigger = sanitizeKeySegment(triggerIdLower);
+
+    // key must match: [a-z0-9/._-]+
+    String key = safeOwner + "/effect/" + safeEffect + "/trigger/" + safeTrigger;
+    return NexKey.of(ownerNamespace, key).toString();
+  }
+
+  private @NotNull String actionIdForTriggerBinding(String owner, String triggerIdLower) {
+    String safeOwner = sanitizeKeyPath(owner);
+    String safeTrigger = sanitizeKeySegment(triggerIdLower);
+
+    String key = safeOwner + "/trigger/" + safeTrigger;
+    return NexKey.of(ownerNamespace, key).toString();
+  }
+
+  private static @NotNull String sanitizeKeyPath(String in) {
+    if (in == null || in.isBlank()) return "unknown";
+    String s = NexKey.normalizeKey(in);
+
+    // allow path separators, replace ":" and other invalid chars
+    s = s.replace(':', '/');
+
+    // keep only allowed chars: [a-z0-9/._-]
+    s = s.replaceAll("[^a-z0-9/._-]", "_");
+
+    // avoid accidental empty segments like "actions://"
+    s = s.replaceAll("/{2,}", "/");
+    if (s.startsWith("/")) s = s.substring(1);
+    if (s.endsWith("/")) s = s.substring(0, s.length() - 1);
+
+    return s.isBlank() ? "unknown" : s;
+  }
+
+  private static @NotNull String sanitizeKeySegment(String in) {
+    if (in == null || in.isBlank()) return "unknown";
+    String s = NexKey.normalizeKey(in);
+
+    // segments must not contain "/" ideally; convert it to "_"
+    s = s.replace('/', '_');
+
+    // keep only allowed chars: [a-z0-9._-]
+    s = s.replaceAll("[^a-z0-9._-]", "_");
+
+    return s.isBlank() ? "unknown" : s;
+  }
+
   private Map<String, List<CompiledAction>> compileEffectStyleToActions(String owner, List<ConfigSection> effectEntries) {
     if (effectEntries == null || effectEntries.isEmpty()) return Map.of();
 
     Map<String, List<CompiledAction>> out = new HashMap<>();
 
-    for (int i = 0; i < effectEntries.size(); i++) {
-      ConfigSection entry = effectEntries.get(i);
+    for (ConfigSection entry : effectEntries) {
       if (entry == null) continue;
 
       String effectId = entry.getString("id", null);
@@ -232,7 +287,7 @@ public final class DefaultNexLogicEngineService implements NexLogicEngineService
           allConds.add(fp::test);
 
           CompiledAction ca = new CompiledAction(
-              owner + ":" + effectId + "@" + triggerIdLower,
+              actionIdForEffectBinding(owner, effectId, triggerIdLower),
               List.of(triggerIdLower),
               List.copyOf(allConds),
               List.of(baseEffect)
@@ -260,8 +315,7 @@ public final class DefaultNexLogicEngineService implements NexLogicEngineService
 
     Map<String, List<CompiledAction>> out = new HashMap<>();
 
-    for (int i = 0; i < triggerEntries.size(); i++) {
-      ConfigSection tEntry = triggerEntries.get(i);
+    for (ConfigSection tEntry : triggerEntries) {
       if (tEntry == null) continue;
 
       String triggerId = tEntry.getString("id", null);
@@ -294,8 +348,7 @@ public final class DefaultNexLogicEngineService implements NexLogicEngineService
       List<EffectInstance> compiledEffects = new ArrayList<>();
       var effectsList = tEntry.getSectionList("effects");
 
-      for (int eIdx = 0; eIdx < effectsList.size(); eIdx++) {
-        ConfigSection eEntry = effectsList.get(eIdx);
+      for (ConfigSection eEntry : effectsList) {
         if (eEntry == null) continue;
 
         String effectId = eEntry.getString("id", null);
@@ -316,7 +369,7 @@ public final class DefaultNexLogicEngineService implements NexLogicEngineService
       }
 
       CompiledAction ca = new CompiledAction(
-          owner + ":trigger:" + triggerIdLower,
+          actionIdForTriggerBinding(owner, triggerIdLower),
           List.of(triggerIdLower),
           List.copyOf(allConds),
           List.copyOf(compiledEffects)
@@ -334,8 +387,7 @@ public final class DefaultNexLogicEngineService implements NexLogicEngineService
     if (conditionEntries == null || conditionEntries.isEmpty()) return List.of();
 
     List<ConditionInstance> out = new ArrayList<>();
-    for (int i = 0; i < conditionEntries.size(); i++) {
-      ConfigSection entry = conditionEntries.get(i);
+    for (ConfigSection entry : conditionEntries) {
       if (entry == null) continue;
 
       String id = entry.getString("id", null);
@@ -351,12 +403,11 @@ public final class DefaultNexLogicEngineService implements NexLogicEngineService
     return List.copyOf(out);
   }
 
-  private List<EffectInstance> compileEffects(List<ConfigSection> effectEntries) {
+  private @NotNull List<EffectInstance> compileEffects(List<ConfigSection> effectEntries) {
     if (effectEntries == null || effectEntries.isEmpty()) return List.of();
 
     List<EffectInstance> out = new ArrayList<>();
-    for (int i = 0; i < effectEntries.size(); i++) {
-      ConfigSection entry = effectEntries.get(i);
+    for (ConfigSection entry : effectEntries) {
       if (entry == null) continue;
 
       String id = entry.getString("id", null);
@@ -379,7 +430,7 @@ public final class DefaultNexLogicEngineService implements NexLogicEngineService
     return svc.create(args == null ? MapConfigSection.EMPTY : args);
   }
 
-  private boolean safeTestAll(List<ConditionInstance> compiled, LogicContext ctx) {
+  private boolean safeTestAll(@NotNull List<ConditionInstance> compiled, LogicContext ctx) {
     for (var c : compiled) {
       boolean ok;
       try {
@@ -393,7 +444,7 @@ public final class DefaultNexLogicEngineService implements NexLogicEngineService
     return true;
   }
 
-  private void safeRunAll(List<EffectInstance> compiled, LogicContext ctx, String tag) {
+  private void safeRunAll(@NotNull List<EffectInstance> compiled, LogicContext ctx, String tag) {
     for (var e : compiled) {
       try {
         e.run(ctx);
@@ -416,18 +467,20 @@ public final class DefaultNexLogicEngineService implements NexLogicEngineService
   private static List<String> toLowerStringList(List<ConfigSection> list) {
     if (list == null || list.isEmpty()) return List.of();
     List<String> out = new ArrayList<>();
-    for (ConfigSection s : list) {
-      if (s == null) continue;
-      String v = s.getString("value", null);
+    for (ConfigSection section : list) {
+      if (section == null) continue;
+      String v = section.getString("value", null);
       if (v != null && !v.isBlank()) out.add(v.toLowerCase());
     }
     return List.copyOf(out);
   }
 
   /**
-   * Best-effort parsing for messages like:
-   * - "Unknown filter id 'blocks' in filters section"
-   * - "Filter 'blocks' requires capability 'BLOCK', but trigger ..."
+   * Extracts and returns an identifier located between single quotes within the given message string.
+   * If the identifier cannot be found or the message is null, an empty {@code Optional} is returned.
+   *
+   * @param msg the input message string containing the identifier in single quotes
+   * @return an {@code Optional} containing the identifier if found and non-blank, or an empty {@code Optional} if not found
    */
   private static Optional<String> extractFilterId(String msg) {
     if (msg == null) return Optional.empty();
