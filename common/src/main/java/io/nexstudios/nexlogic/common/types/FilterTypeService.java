@@ -1,4 +1,4 @@
-package io.nexstudios.nexlogic.common.services.types.filter;
+package io.nexstudios.nexlogic.common.types;
 
 import io.nexstudios.nexlogic.common.config.ConfigSection;
 import io.nexstudios.nexlogic.common.model.LogicContext;

@@ -41,9 +41,4 @@ public final class DefaultTriggerBusService implements TriggerBusService {
     if (combined.isEmpty()) return;
     runtime.executeAll(combined, ctx);
   }
-
-  @Override
-  public void swap(Map<String, List<CompiledAction>> compiled) {
-    active.set(compiled);
-  }
 }

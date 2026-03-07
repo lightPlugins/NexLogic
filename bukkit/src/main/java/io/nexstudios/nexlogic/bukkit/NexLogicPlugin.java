@@ -1,16 +1,18 @@
 package io.nexstudios.nexlogic.bukkit;
 
 import io.nexstudios.framework.paper.NexPaperPlugin;
+import io.nexstudios.nexlogic.bukkit.services.bootstrap.BukkitBuiltinsService;
 import io.nexstudios.nexlogic.common.services.engine.DefaultLogicEngineService;
 import io.nexstudios.nexlogic.common.services.engine.LogicEngineService;
 import io.nexstudios.nexlogic.common.services.executor.async.AsyncExecutorService;
 import io.nexstudios.nexlogic.common.services.executor.async.DefaultAsyncExecutorService;
 import io.nexstudios.nexlogic.bukkit.services.config.ConfigPathService;
 import io.nexstudios.nexlogic.bukkit.services.config.DefaultConfigPathService;
+import io.nexstudios.nexlogic.bukkit.services.context.BukkitContextResolverService;
+import io.nexstudios.nexlogic.bukkit.services.context.DefaultBukkitContextResolverService;
 import io.nexstudios.nexlogic.bukkit.services.jointrigger.JoinTriggerListenerService;
 import io.nexstudios.nexlogic.common.services.executor.DefaultMainThreadExecutorService;
 import io.nexstudios.nexlogic.common.services.executor.MainThreadExecutorService;
-import io.nexstudios.nexlogic.bukkit.services.mvp.BukkitMvpTypesService;
 import io.nexstudios.nexlogic.bukkit.services.command.NexLogicCommandService;
 import io.nexstudios.nexlogic.bukkit.services.reload.DefaultReloadService;
 import io.nexstudios.nexlogic.bukkit.services.reload.ReloadService;
@@ -24,18 +26,14 @@ import io.nexstudios.nexlogic.common.services.registry.condition.ConditionTypeRe
 import io.nexstudios.nexlogic.common.services.registry.condition.DefaultConditionTypeRegistryService;
 import io.nexstudios.nexlogic.common.services.registry.effect.DefaultEffectTypeRegistryService;
 import io.nexstudios.nexlogic.common.services.registry.effect.EffectTypeRegistryService;
-import io.nexstudios.nexlogic.common.services.filters.CommonFilterTypesService;
 import io.nexstudios.nexlogic.common.services.filters.DefaultFilterService;
 import io.nexstudios.nexlogic.common.services.filters.FilterService;
 import io.nexstudios.nexlogic.common.services.registry.filter.DefaultFilterTypeRegistryService;
 import io.nexstudios.nexlogic.common.services.registry.filter.FilterTypeRegistryService;
-import io.nexstudios.nexlogic.common.services.compiler.DefaultLogicCompilerService;
-import io.nexstudios.nexlogic.common.services.compiler.LogicCompilerService;
 import io.nexstudios.nexlogic.common.services.triggers.register.DefaultTriggerRegistrationService;
 import io.nexstudios.nexlogic.common.services.triggers.register.TriggerRegistrationService;
 import io.nexstudios.nexlogic.common.services.triggers.schema.DefaultTriggerContextSchemaService;
 import io.nexstudios.nexlogic.common.services.triggers.schema.TriggerContextSchemaService;
-import io.nexstudios.nexlogic.common.services.types.mvp.CommonMvpTypesService;
 import io.nexstudios.nexlogic.common.services.triggers.bus.DefaultTriggerBusService;
 import io.nexstudios.nexlogic.common.services.triggers.bus.TriggerBusService;
 import io.nexstudios.nexlogic.common.services.triggers.rules.DefaultTriggerRuleRegistryService;
@@ -61,8 +59,9 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     // Filters MUST be registered before services that depend on FilterService (e.g. TriggerRuleRegistry)
     services.register(FilterTypeRegistryService.class, DefaultFilterTypeRegistryService.class);
     services.register(FilterService.class, DefaultFilterService.class);
-    services.register(CommonFilterTypesService.class, CommonFilterTypesService.class);
-    services.register(LogicCompilerService.class, DefaultLogicCompilerService.class);
+
+    // Built-in Bukkit registrations (effects/conditions/filters)
+    services.register(BukkitBuiltinsService.class, BukkitBuiltinsService.class);
     services.register(ActionRuntimeService.class, DefaultActionRuntimeService.class);
     services.register(TriggerRuntimeService.class, DefaultTriggerRuntimeService.class);
     services.register(TriggerRegistrationService.class, DefaultTriggerRegistrationService.class);
@@ -71,6 +70,7 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     services.register(LogicEngineService.class, DefaultLogicEngineService.class);
 
     // Bukkit-specific
+    services.register(BukkitContextResolverService.class, DefaultBukkitContextResolverService.class);
     services.register(MainThreadExecutorService.class, DefaultMainThreadExecutorService.class);
     services.register(AsyncExecutorService.class, DefaultAsyncExecutorService.class);
     services.register(ConfigPathService.class, DefaultConfigPathService.class);
@@ -80,10 +80,6 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     // Commands and triggers are services too
     services.register(NexLogicCommandService.class, NexLogicCommandService.class);
     services.register(JoinTriggerListenerService.class, JoinTriggerListenerService.class);
-
-    // MVP type providers (services) registered through addon registry at start()
-    services.register(CommonMvpTypesService.class, CommonMvpTypesService.class);
-    services.register(BukkitMvpTypesService.class, BukkitMvpTypesService.class);
   }
 
   @Override
@@ -102,12 +98,8 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     var join = services().getService(JoinTriggerListenerService.class);
     Bukkit.getPluginManager().registerEvents(join, this);
 
-    // Register MVP effect/condition types via addon registry (so addon path is the same)
-    services().getService(CommonMvpTypesService.class).register();
-    services().getService(BukkitMvpTypesService.class).register();
-
-    // Register built-in filter types (blocks/worlds)
-    services().getService(CommonFilterTypesService.class).register();
+    // Register built-in Bukkit types (conditions/effects/filters)
+    services().getService(BukkitBuiltinsService.class).registerAll();
 
     // Initial load/compile async, then swap atomically
     services().getService(ReloadService.class).reloadAsync();

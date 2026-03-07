@@ -1,14 +1,15 @@
-package io.nexstudios.nexlogic.common.types.effects;
+package io.nexstudios.nexlogic.bukkit.types.effects;
 
 import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
+import io.nexstudios.nexlogic.bukkit.services.context.BukkitContextKeys;
 import io.nexstudios.nexlogic.common.config.ConfigSection;
 import io.nexstudios.nexlogic.common.runtime.EffectInstance;
 import io.nexstudios.nexlogic.common.services.executor.MainThreadExecutorService;
-import io.nexstudios.nexlogic.common.services.types.effect.EffectTypeService;
-import org.bukkit.Bukkit;
+import io.nexstudios.nexlogic.common.services.triggers.schema.ContextCapability;
+import io.nexstudios.nexlogic.common.types.EffectTypeService;
 import org.bukkit.entity.Player;
 
-import java.util.UUID;
+import java.util.Set;
 
 public final class MessageEffectType implements EffectTypeService {
 
@@ -24,15 +25,26 @@ public final class MessageEffectType implements EffectTypeService {
   }
 
   @Override
+  public Set<ContextCapability> requiredCapabilities() {
+    return Set.of(ContextCapability.PLAYER);
+  }
+
+  @Override
   public EffectInstance create(ConfigSection args) {
-    String message = args.getString("message", "");
-    return ctx -> ctx.actorUuid().ifPresent(u -> {
+    String message = args == null ? "" : args.getString("message", "");
+
+    return ctx -> {
+      if (ctx == null) return;
+
+      Player p = ctx.get(BukkitContextKeys.PLAYER).orElse(null);
+      if (p == null || !p.isOnline()) return;
+
       Runnable send = () -> {
-        Player p = Bukkit.getPlayer(UUID.fromString(u));
-        if (p != null && p.isOnline()) p.sendMessage(message);
+        if (p.isOnline()) p.sendMessage(message);
       };
+
       if (mainThread.isMainThread()) send.run();
       else mainThread.execute(send);
-    });
+    };
   }
 }

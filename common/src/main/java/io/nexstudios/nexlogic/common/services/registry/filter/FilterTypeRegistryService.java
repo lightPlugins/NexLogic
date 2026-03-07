@@ -1,6 +1,6 @@
 package io.nexstudios.nexlogic.common.services.registry.filter;
 
-import io.nexstudios.nexlogic.common.services.types.filter.FilterTypeService;
+import io.nexstudios.nexlogic.common.types.FilterTypeService;
 import io.nexstudios.serviceregistry.di.Service;
 import java.util.Optional;
 

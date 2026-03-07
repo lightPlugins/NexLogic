@@ -12,6 +12,8 @@ import io.nexstudios.nexlogic.common.services.filters.FilterService;
 import io.nexstudios.nexlogic.common.services.registry.condition.ConditionTypeRegistryService;
 import io.nexstudios.nexlogic.common.services.registry.effect.EffectTypeRegistryService;
 import io.nexstudios.nexlogic.common.services.triggers.register.TriggerRegistrationService;
+import io.nexstudios.nexlogic.common.services.triggers.schema.ContextCapability;
+import io.nexstudios.nexlogic.common.services.triggers.schema.TriggerContextSchemaService;
 import io.nexstudios.serviceregistry.di.Dependencies;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,6 +29,7 @@ import java.util.logging.Logger;
     EffectTypeRegistryService.class,
     FilterService.class,
     TriggerRegistrationService.class,
+    TriggerContextSchemaService.class,
 })
 public final class DefaultLogicEngineService implements LogicEngineService {
 
@@ -34,6 +37,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
   private final EffectTypeRegistryService effects;
   private final FilterService filters;
   private final TriggerRegistrationService registrations;
+  private final TriggerContextSchemaService schema;
   private final Logger logger;
 
   private final String ownerNamespace;
@@ -44,6 +48,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
     this.effects = services.getService(EffectTypeRegistryService.class);
     this.filters = services.getService(FilterService.class);
     this.registrations = services.getService(TriggerRegistrationService.class);
+    this.schema = services.getService(TriggerContextSchemaService.class);
     this.logger = core.plugin().getLogger();
 
     this.ownerNamespace = NexKey.normalizeNamespace(core.plugin().getName());
@@ -245,28 +250,13 @@ public final class DefaultLogicEngineService implements LogicEngineService {
 
     Map<String, List<CompiledAction>> out = new HashMap<>();
 
-    for (ConfigSection entry : effectEntries) {
+    for (int entryIndex = 0; entryIndex < effectEntries.size(); entryIndex++) {
+      ConfigSection entry = effectEntries.get(entryIndex);
       if (entry == null) continue;
 
       String effectId = entry.getString("id", null);
       if (effectId == null || effectId.isBlank()) {
         logger.severe("Invalid effect entry (missing id). Found in file: " + owner + ".yml");
-        continue;
-      }
-
-      List<ConditionInstance> entryConditions;
-      try {
-        entryConditions = compileConditions(entry.getSectionList("conditions"));
-      } catch (Throwable ex) {
-        logger.severe("Invalid conditions for effect '" + effectId + "'. Found in file: " + owner + ".yml");
-        continue;
-      }
-
-      EffectInstance baseEffect;
-      try {
-        baseEffect = compileSingleEffect(effectId, entry.getSection("args"), owner);
-      } catch (Throwable ex) {
-        logger.severe("Unknown/invalid effect '" + effectId + "'. Found in file: " + owner + ".yml");
         continue;
       }
 
@@ -277,10 +267,29 @@ public final class DefaultLogicEngineService implements LogicEngineService {
       }
 
       ConfigSection entryFilters = entry.getSection("filters");
+      List<ConfigSection> entryConditionsRaw = entry.getSectionList("conditions");
+      ConfigSection effectArgs = entry.getSection("args");
 
       for (String triggerIdLower : triggers) {
+        Set<ContextCapability> caps = schema.capabilities(triggerIdLower);
+
+        List<ConditionInstance> entryConditions;
         try {
-          // compile filters for that trigger (this is where capability/unknown filter errors happen)
+          entryConditions = compileConditionsValidated(caps, entryConditionsRaw, owner, effectId, triggerIdLower, entryIndex);
+        } catch (Throwable ex) {
+          logger.severe("Invalid conditions for effect '" + effectId + "' on trigger '" + triggerIdLower + "'. Found in file: " + owner + ".yml");
+          continue;
+        }
+
+        EffectInstance baseEffect;
+        try {
+          baseEffect = compileSingleEffectValidated(caps, effectId, effectArgs, owner, triggerIdLower, entryIndex);
+        } catch (Throwable ex) {
+          // compileSingleEffectValidated already logs a precise reason
+          continue;
+        }
+
+        try {
           Predicate<LogicContext> fp = filters.compile(triggerIdLower, entryFilters);
 
           List<ConditionInstance> allConds = new ArrayList<>(entryConditions);
@@ -300,7 +309,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
               "Filter '" + filterId + "' is not compatible with trigger '" + triggerIdLower +
                   "' for effect '" + effectId + "'. Found in file: " + owner + ".yml"
           );
-          // keep going; only skip this binding
+          // skip only this binding
         }
       }
     }
@@ -315,7 +324,8 @@ public final class DefaultLogicEngineService implements LogicEngineService {
 
     Map<String, List<CompiledAction>> out = new HashMap<>();
 
-    for (ConfigSection tEntry : triggerEntries) {
+    for (int triggerIndex = 0; triggerIndex < triggerEntries.size(); triggerIndex++) {
+      ConfigSection tEntry = triggerEntries.get(triggerIndex);
       if (tEntry == null) continue;
 
       String triggerId = tEntry.getString("id", null);
@@ -325,9 +335,11 @@ public final class DefaultLogicEngineService implements LogicEngineService {
       }
       String triggerIdLower = triggerId.toLowerCase();
 
+      Set<ContextCapability> caps = schema.capabilities(triggerIdLower);
+
       List<ConditionInstance> triggerConditions;
       try {
-        triggerConditions = compileConditions(tEntry.getSectionList("conditions"));
+        triggerConditions = compileConditionsValidated(caps, tEntry.getSectionList("conditions"), owner, "trigger:" + triggerIdLower, triggerIdLower, triggerIndex);
       } catch (Throwable ex) {
         logger.severe("Invalid conditions for trigger '" + triggerIdLower + "'. Found in file: " + owner + ".yml");
         continue;
@@ -348,7 +360,8 @@ public final class DefaultLogicEngineService implements LogicEngineService {
       List<EffectInstance> compiledEffects = new ArrayList<>();
       var effectsList = tEntry.getSectionList("effects");
 
-      for (ConfigSection eEntry : effectsList) {
+      for (int effectIndex = 0; effectIndex < effectsList.size(); effectIndex++) {
+        ConfigSection eEntry = effectsList.get(effectIndex);
         if (eEntry == null) continue;
 
         String effectId = eEntry.getString("id", null);
@@ -357,15 +370,18 @@ public final class DefaultLogicEngineService implements LogicEngineService {
           continue;
         }
 
-        EffectInstance base;
         try {
-          base = compileSingleEffect(effectId, eEntry.getSection("args"), owner);
-        } catch (Throwable ex) {
-          logger.severe("Unknown/invalid effect '" + effectId + "'. Found in file: " + owner + ".yml");
-          continue;
+          compiledEffects.add(
+              compileSingleEffectValidated(caps, effectId, eEntry.getSection("args"), owner, triggerIdLower, effectIndex)
+          );
+        } catch (Throwable ignored) {
+          // compileSingleEffectValidated already logged; skip this nested effect
         }
+      }
 
-        compiledEffects.add(base);
+      if (compiledEffects.isEmpty()) {
+        logger.severe("Trigger '" + triggerIdLower + "' has no valid effects after compatibility checks. Found in file: " + owner + ".yml");
+        continue;
       }
 
       CompiledAction ca = new CompiledAction(
@@ -381,6 +397,74 @@ public final class DefaultLogicEngineService implements LogicEngineService {
     Map<String, List<CompiledAction>> frozen = new HashMap<>();
     for (var e : out.entrySet()) frozen.put(e.getKey(), List.copyOf(e.getValue()));
     return Map.copyOf(frozen);
+  }
+
+  private List<ConditionInstance> compileConditionsValidated(
+      Set<ContextCapability> caps,
+      List<ConfigSection> conditionEntries,
+      String owner,
+      String subjectId,
+      String triggerIdLower,
+      int indexForLog
+  ) {
+    if (conditionEntries == null || conditionEntries.isEmpty()) return List.of();
+
+    List<ConditionInstance> out = new ArrayList<>();
+    for (int i = 0; i < conditionEntries.size(); i++) {
+      ConfigSection entry = conditionEntries.get(i);
+      if (entry == null) continue;
+
+      String id = entry.getString("id", null);
+      if (id == null) throw new IllegalArgumentException("Condition entry missing 'id'");
+
+      var svc = conditions.resolve(id).orElseThrow(() ->
+          new IllegalArgumentException("Unknown condition id '" + id + "'")
+      );
+
+      Set<ContextCapability> required = svc.requiredCapabilities();
+      if (!caps.containsAll(required)) {
+        Set<ContextCapability> missing = EnumSet.copyOf(required);
+        missing.removeAll(caps);
+
+        logger.severe(
+            "Skipping condition '" + id + "' for '" + subjectId + "' on trigger '" + triggerIdLower + "' (owner '" + owner + "'): " +
+                "missing capabilities " + missing + ", provided " + caps + " (entryIndex=" + indexForLog + ", conditionIndex=" + i + ")"
+        );
+        throw new IllegalArgumentException("Incompatible condition '" + id + "'");
+      }
+
+      ConfigSection args = entry.getSection("args");
+      out.add(svc.create(args == null ? MapConfigSection.EMPTY : args));
+    }
+
+    return List.copyOf(out);
+  }
+
+  private EffectInstance compileSingleEffectValidated(
+      Set<ContextCapability> caps,
+      String effectId,
+      ConfigSection args,
+      String owner,
+      String triggerIdLower,
+      int indexForLog
+  ) {
+    var svc = effects.resolve(effectId).orElseThrow(() ->
+        new IllegalArgumentException("Unknown effect id '" + effectId + "' at " + owner)
+    );
+
+    Set<ContextCapability> required = svc.requiredCapabilities();
+    if (!caps.containsAll(required)) {
+      Set<ContextCapability> missing = EnumSet.copyOf(required);
+      missing.removeAll(caps);
+
+      logger.severe(
+          "Skipping effect '" + effectId + "' on trigger '" + triggerIdLower + "' (owner '" + owner + "'): " +
+              "missing capabilities " + missing + ", provided " + caps + " (index=" + indexForLog + ")"
+      );
+      throw new IllegalArgumentException("Incompatible effect '" + effectId + "'");
+    }
+
+    return svc.create(args == null ? MapConfigSection.EMPTY : args);
   }
 
   private List<ConditionInstance> compileConditions(List<ConfigSection> conditionEntries) {

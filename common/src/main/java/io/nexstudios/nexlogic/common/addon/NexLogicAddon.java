@@ -1,7 +1,7 @@
 package io.nexstudios.nexlogic.common.addon;
 
-import io.nexstudios.nexlogic.common.services.types.ConditionTypeService;
-import io.nexstudios.nexlogic.common.services.types.effect.EffectTypeService;
+import io.nexstudios.nexlogic.common.types.ConditionTypeService;
+import io.nexstudios.nexlogic.common.types.EffectTypeService;
 
 public interface NexLogicAddon {
   void register(Registration registration);
