@@ -40,8 +40,6 @@ public final class DefaultLogicEngineService implements LogicEngineService {
   private final TriggerRegistrationService registrations;
   private final TriggerContextSchemaService schema;
   private final LoggerService loggerService;
-  private final PlatformPluginService platformPluginService;
-
   private final String ownerNamespace;
 
   public DefaultLogicEngineService(ServiceAccessor accessor) {
@@ -51,7 +49,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
     this.registrations = accessor.getService(TriggerRegistrationService.class);
     this.schema = accessor.getService(TriggerContextSchemaService.class);
     this.loggerService = accessor.getService(LoggerService.class);
-    this.platformPluginService = accessor.getService(PlatformPluginService.class);
+    PlatformPluginService platformPluginService = accessor.getService(PlatformPluginService.class);
     this.ownerNamespace = NexKey.normalizeNamespace(platformPluginService.name());
   }
 
