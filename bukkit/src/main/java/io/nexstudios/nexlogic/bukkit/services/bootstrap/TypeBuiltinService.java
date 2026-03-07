@@ -1,6 +1,5 @@
 package io.nexstudios.nexlogic.bukkit.services.bootstrap;
 
-import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
 import io.nexstudios.nexlogic.bukkit.types.conditions.ChanceConditionType;
 import io.nexstudios.nexlogic.bukkit.types.conditions.PermissionConditionType;
 import io.nexstudios.nexlogic.bukkit.types.effects.LogEffectType;
@@ -17,24 +16,24 @@ import io.nexstudios.serviceregistry.di.ServiceAccessor;
     AddonRegistryService.class,
     FilterTypeRegistryService.class
 })
-public final class BukkitBuiltinsService implements Service {
+public final class TypeBuiltinService implements Service {
 
-  private final ServiceAccessor services;
+  private final ServiceAccessor service;
   private final AddonRegistryService addons;
   private final FilterTypeRegistryService filters;
 
-  public BukkitBuiltinsService(PaperPluginService core) {
-    this.services = core.plugin().services();
-    this.addons = services.getService(AddonRegistryService.class);
-    this.filters = services.getService(FilterTypeRegistryService.class);
+  public TypeBuiltinService(ServiceAccessor service) {
+    this.service = service;
+    this.addons = service.getService(AddonRegistryService.class);
+    this.filters = service.getService(FilterTypeRegistryService.class);
   }
 
   public void registerAll() {
-    registerMvpTypes();
+    registerConditionAndEffectTypes();
     registerFilterTypes();
   }
 
-  private void registerMvpTypes() {
+  private void registerConditionAndEffectTypes() {
     addons.registerAddon(r -> {
       r.registerConditionType(ChanceConditionType.class);
       r.registerConditionType(PermissionConditionType.class);
@@ -44,7 +43,7 @@ public final class BukkitBuiltinsService implements Service {
   }
 
   private void registerFilterTypes() {
-    filters.register(services.create(BlocksFilterType.class));
-    filters.register(services.create(WorldsFilterType.class));
+    filters.register(service.create(BlocksFilterType.class));
+    filters.register(service.create(WorldsFilterType.class));
   }
 }

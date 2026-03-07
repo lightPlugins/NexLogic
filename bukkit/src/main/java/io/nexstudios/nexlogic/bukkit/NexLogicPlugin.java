@@ -3,7 +3,9 @@ package io.nexstudios.nexlogic.bukkit;
 import io.nexstudios.framework.paper.NexPaperPlugin;
 import io.nexstudios.nexlogic.bukkit.services.blocks.BlockKeyService;
 import io.nexstudios.nexlogic.bukkit.services.blocks.DefaultBlockKeyService;
-import io.nexstudios.nexlogic.bukkit.services.bootstrap.BukkitBuiltinsService;
+import io.nexstudios.nexlogic.bukkit.services.bootstrap.TypeBuiltinService;
+import io.nexstudios.nexlogic.bukkit.services.listeners.TriggerListenerService;
+import io.nexstudios.nexlogic.bukkit.services.listeners.DefaultTriggerListenerService;
 import io.nexstudios.nexlogic.bukkit.services.logging.BukkitLoggerService;
 import io.nexstudios.nexlogic.bukkit.services.platform.BukkitPlatformPluginService;
 import io.nexstudios.nexlogic.bukkit.types.trigger.BreakBlockTriggerType;
@@ -48,7 +50,6 @@ import io.nexstudios.nexlogic.common.services.triggers.rules.TriggerRuleRegistry
 import io.nexstudios.nexlogic.common.services.triggers.runtime.DefaultTriggerRuntimeService;
 import io.nexstudios.nexlogic.common.services.triggers.runtime.TriggerRuntimeService;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
-import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
 public final class NexLogicPlugin extends NexPaperPlugin {
@@ -59,6 +60,7 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     services.register(LoggerService.class, BukkitLoggerService.class);
     services.register(PlatformPluginService.class, BukkitPlatformPluginService.class);
     services.register(BlockKeyService.class, DefaultBlockKeyService.class);
+
     services.register(EffectTypeRegistryService.class, DefaultEffectTypeRegistryService.class);
     services.register(ConditionTypeRegistryService.class, DefaultConditionTypeRegistryService.class);
     services.register(AddonRegistryService.class, DefaultAddonRegistryService.class);
@@ -71,7 +73,7 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     services.register(FilterService.class, DefaultFilterService.class);
 
     // Built-in Bukkit registrations (effects/conditions/filters)
-    services.register(BukkitBuiltinsService.class, BukkitBuiltinsService.class);
+    services.register(TypeBuiltinService.class, TypeBuiltinService.class);
     services.register(ActionRuntimeService.class, DefaultActionRuntimeService.class);
     services.register(TriggerRuntimeService.class, DefaultTriggerRuntimeService.class);
     services.register(TriggerRegistrationService.class, DefaultTriggerRegistrationService.class);
@@ -91,6 +93,9 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     services.register(NexLogicCommandService.class, NexLogicCommandService.class);
     services.register(JoinTriggerType.class, JoinTriggerType.class);
     services.register(BreakBlockTriggerType.class, BreakBlockTriggerType.class);
+
+    // Trigger listener registration
+    services.register(TriggerListenerService.class, DefaultTriggerListenerService.class);
   }
 
   @Override
@@ -105,14 +110,11 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     // Register commands via NexFramework command system
     registerCommands(NexLogicCommandService.class);
 
-    // Register listeners
-    var join = services().getService(JoinTriggerType.class);
-    var breakBlock = services().getService(BreakBlockTriggerType.class);
-    Bukkit.getPluginManager().registerEvents(join, this);
-    Bukkit.getPluginManager().registerEvents(breakBlock, this);
+    // Register trigger listeners
+    services().getService(TriggerListenerService.class).registerAll();
 
     // Register built-in Bukkit types (conditions/effects/filters)
-    services().getService(BukkitBuiltinsService.class).registerAll();
+    services().getService(TypeBuiltinService.class).registerAll();
 
     // Initial load/compile async, then swap automatically
     services().getService(ReloadService.class).reloadAsync();
