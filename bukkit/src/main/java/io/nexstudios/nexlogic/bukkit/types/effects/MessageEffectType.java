@@ -4,7 +4,7 @@ import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
 import io.nexstudios.nexlogic.bukkit.services.context.BukkitContextKeys;
 import io.nexstudios.nexlogic.common.config.ConfigSection;
 import io.nexstudios.nexlogic.common.runtime.EffectInstance;
-import io.nexstudios.nexlogic.common.services.executor.MainThreadExecutorService;
+import io.nexstudios.nexlogic.bukkit.services.executor.MainThreadExecutorService;
 import io.nexstudios.nexlogic.common.services.triggers.schema.ContextCapability;
 import io.nexstudios.nexlogic.common.types.EffectTypeService;
 import org.bukkit.entity.Player;

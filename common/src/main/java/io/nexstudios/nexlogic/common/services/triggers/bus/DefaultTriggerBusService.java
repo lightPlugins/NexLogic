@@ -19,15 +19,13 @@ import java.util.concurrent.atomic.AtomicReference;
 })
 public final class DefaultTriggerBusService implements TriggerBusService {
 
-  private final ServiceAccessor services;
   private final AtomicReference<Map<String, List<CompiledAction>>> active = new AtomicReference<>(Map.of());
   private final TriggerRuntimeService runtime;
   private final TriggerRegistrationService registrations;
 
-  public DefaultTriggerBusService(PaperPluginService core) {
-    this.services = core.plugin().services();
-    this.runtime = services.getService(TriggerRuntimeService.class);
-    this.registrations = services.getService(TriggerRegistrationService.class);
+  public DefaultTriggerBusService(ServiceAccessor accessor) {
+    this.runtime = accessor.getService(TriggerRuntimeService.class);
+    this.registrations = accessor.getService(TriggerRegistrationService.class);
   }
 
   @Override

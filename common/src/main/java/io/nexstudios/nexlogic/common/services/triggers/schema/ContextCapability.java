@@ -6,7 +6,5 @@ public enum ContextCapability {
   LOCATION,
   BLOCK,
   ENTITY,
-  ITEM,
-  MESSAGE,
-  SERVER
+  ITEM
 }

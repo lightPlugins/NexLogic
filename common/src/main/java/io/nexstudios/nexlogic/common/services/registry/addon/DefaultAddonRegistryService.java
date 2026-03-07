@@ -1,6 +1,5 @@
 package io.nexstudios.nexlogic.common.services.registry.addon;
 
-import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
 import io.nexstudios.nexlogic.common.addon.NexLogicAddon;
 import io.nexstudios.nexlogic.common.services.registry.condition.ConditionTypeRegistryService;
 import io.nexstudios.nexlogic.common.types.ConditionTypeService;
@@ -17,14 +16,14 @@ import java.util.Objects;
 })
 public final class DefaultAddonRegistryService implements AddonRegistryService {
 
-  private final ServiceAccessor services;
+  private final ServiceAccessor service;
   private final EffectTypeRegistryService effects;
   private final ConditionTypeRegistryService conditions;
 
-  public DefaultAddonRegistryService(PaperPluginService core) {
-    this.services = core.plugin().services();
-    this.effects = services.getService(EffectTypeRegistryService.class);
-    this.conditions = services.getService(ConditionTypeRegistryService.class);
+  public DefaultAddonRegistryService(ServiceAccessor service) {
+    this.service = service;
+    this.effects = service.getService(EffectTypeRegistryService.class);
+    this.conditions = service.getService(ConditionTypeRegistryService.class);
   }
 
   @Override
@@ -43,12 +42,12 @@ public final class DefaultAddonRegistryService implements AddonRegistryService {
 
       @Override
       public void registerEffectType(Class<? extends EffectTypeService> effectTypeClass) {
-        registerEffectType(services.create(effectTypeClass));
+        registerEffectType(service.create(effectTypeClass));
       }
 
       @Override
       public void registerConditionType(Class<? extends ConditionTypeService> conditionTypeClass) {
-        registerConditionType(services.create(conditionTypeClass));
+        registerConditionType(service.create(conditionTypeClass));
       }
     });
   }

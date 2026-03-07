@@ -1,4 +1,4 @@
-package io.nexstudios.nexlogic.common.services.executor.async;
+package io.nexstudios.nexlogic.bukkit.services.executor.async;
 
 import io.nexstudios.serviceregistry.di.Service;
 

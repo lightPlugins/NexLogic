@@ -1,4 +1,4 @@
-package io.nexstudios.nexlogic.bukkit.services.jointrigger;
+package io.nexstudios.nexlogic.bukkit.types.trigger;
 
 import io.nexstudios.framework.paper.services.ServiceListener;
 import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
@@ -7,34 +7,32 @@ import io.nexstudios.nexlogic.common.model.LogicContext;
 import io.nexstudios.nexlogic.common.services.triggers.bus.TriggerBusService;
 import io.nexstudios.serviceregistry.di.Dependencies;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 @Dependencies({
     TriggerBusService.class
 })
-public final class JoinTriggerListenerService implements ServiceListener {
+public final class JoinTriggerType implements ServiceListener {
 
   private final ServiceAccessor services;
   private final TriggerBusService triggerBus;
 
-  public JoinTriggerListenerService(PaperPluginService core) {
+  public JoinTriggerType(PaperPluginService core) {
     this.services = core.plugin().services();
     this.triggerBus = services.getService(TriggerBusService.class);
   }
 
   @EventHandler
   public void onJoin(PlayerJoinEvent e) {
-    var p = e.getPlayer();
+    Player player = e.getPlayer();
 
-    var ctx = new LogicContext(
-        "join",
-        new LogicContext.PlayerContext(p.getUniqueId())
-    );
+    LogicContext ctx = new LogicContext("join");
 
-    ctx.put(BukkitContextKeys.PLAYER, p);
-    ctx.put(BukkitContextKeys.WORLD, p.getWorld());
-    ctx.put(BukkitContextKeys.LOCATION, p.getLocation());
+    ctx.put(BukkitContextKeys.PLAYER, player);
+    ctx.put(BukkitContextKeys.WORLD, player.getWorld());
+    ctx.put(BukkitContextKeys.LOCATION, player.getLocation());
 
     triggerBus.fire("join", ctx);
   }

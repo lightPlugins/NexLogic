@@ -1,7 +1,7 @@
 package io.nexstudios.nexlogic.bukkit.services.reload;
 
 import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
-import io.nexstudios.nexlogic.common.services.executor.async.AsyncExecutorService;
+import io.nexstudios.nexlogic.bukkit.services.executor.async.AsyncExecutorService;
 import io.nexstudios.nexlogic.bukkit.services.loader.YamlLoaderService;
 import io.nexstudios.nexlogic.common.services.engine.LogicEngineService;
 import io.nexstudios.serviceregistry.di.Dependencies;

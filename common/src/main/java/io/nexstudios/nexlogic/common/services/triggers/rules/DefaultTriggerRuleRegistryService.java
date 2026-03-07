@@ -1,22 +1,26 @@
 package io.nexstudios.nexlogic.common.services.triggers.rules;
 
-import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
 import io.nexstudios.nexlogic.common.config.ConfigSection;
 import io.nexstudios.nexlogic.common.model.LogicContext;
 import io.nexstudios.nexlogic.common.services.filters.FilterService;
+import io.nexstudios.serviceregistry.di.Dependencies;
+import io.nexstudios.serviceregistry.di.ServiceAccessor;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+@Dependencies({
+    FilterService.class
+})
 public final class DefaultTriggerRuleRegistryService implements TriggerRuleRegistryService {
 
   private final FilterService filters;
   private final ConcurrentHashMap<String, CopyOnWriteArrayList<TriggerRule>> byTrigger = new ConcurrentHashMap<>();
 
-  public DefaultTriggerRuleRegistryService(PaperPluginService core) {
-    this.filters = core.plugin().services().getService(FilterService.class);
+  public DefaultTriggerRuleRegistryService(ServiceAccessor accessor) {
+    this.filters = accessor.getService(FilterService.class);
   }
 
   @Override

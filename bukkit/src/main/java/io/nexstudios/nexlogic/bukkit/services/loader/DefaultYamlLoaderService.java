@@ -46,11 +46,10 @@ public final class DefaultYamlLoaderService implements YamlLoaderService {
   }
 
   /**
-   * Style-1 packs:
+   * supported format:
    * actions/<file>.yml:
    *   enabled: true
-   *   test:
-   *     effects: [ ... ]
+   *   effects: [ ... ]
    */
   @Override
   public Map<String, List<ConfigSection>> loadEffectStylePacks(Map<String, Map<String, Object>> arguments) {
@@ -67,17 +66,16 @@ public final class DefaultYamlLoaderService implements YamlLoaderService {
         boolean enabled = cfg.getBoolean("enabled", true);
         if (!enabled) continue;
 
-        ConfigSection test = cfg.getSection("test");
-        if (test == null) continue;
-
-        List<ConfigSection> effects = test.getSectionList("effects");
+        // only ROOT "effects" is allowed
+        List<ConfigSection> effects = cfg.getSectionList("effects");
         if (effects.isEmpty()) continue;
 
-        List<ConfigSection> expanded = expandCustomArgs(effects, arguments, fileId, "test.effects");
+        // keep custom args expansion (still works on effectEntry.args)
+        List<ConfigSection> expanded = expandCustomArgs(effects, arguments, fileId, "effects");
         out.put(owner, expanded);
       }
     } catch (Exception e) {
-      logger.severe("Failed to read actions folder for test.effects: " + e.getMessage());
+      logger.severe("Failed to read actions folder for effects: " + e.getMessage());
       e.printStackTrace();
     }
 

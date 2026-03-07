@@ -1,6 +1,5 @@
 package io.nexstudios.nexlogic.common.services.triggers.runtime;
 
-import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
 import io.nexstudios.nexlogic.common.model.CompiledAction;
 import io.nexstudios.nexlogic.common.model.LogicContext;
 import io.nexstudios.nexlogic.common.services.runtime.ActionRuntimeService;
@@ -14,12 +13,10 @@ import java.util.List;
 })
 public final class DefaultTriggerRuntimeService implements TriggerRuntimeService {
 
-  private final ServiceAccessor services;
   private final ActionRuntimeService runtime;
 
-  public DefaultTriggerRuntimeService(PaperPluginService core) {
-    this.services = core.plugin().services();
-    this.runtime = services.getService(ActionRuntimeService.class);
+  public DefaultTriggerRuntimeService(ServiceAccessor service) {
+    this.runtime = service.getService(ActionRuntimeService.class);
   }
 
   @Override

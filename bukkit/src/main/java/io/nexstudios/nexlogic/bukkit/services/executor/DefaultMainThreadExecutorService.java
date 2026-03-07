@@ -1,4 +1,4 @@
-package io.nexstudios.nexlogic.common.services.executor;
+package io.nexstudios.nexlogic.bukkit.services.executor;
 
 import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
 import org.bukkit.Bukkit;

@@ -259,24 +259,42 @@ public final class DefaultLogicEngineService implements LogicEngineService {
         continue;
       }
 
-      List<String> triggers = toLowerStringList(entry.getSectionList("triggers"));
-      if (triggers.isEmpty()) {
-        loggerService.logger().severe("Effect '" + effectId + "' has no triggers. Found in file: " + owner + ".yml");
+      ConfigSection effectArgs = entry.getSection("args");
+
+      List<ConfigSection> triggerBindings = entry.getSectionList("trigger");
+      if (triggerBindings == null || triggerBindings.isEmpty()) {
+        loggerService.logger().severe("Effect '" + effectId + "' has no trigger bindings. Found in file: " + owner + ".yml");
         continue;
       }
 
-      ConfigSection entryFilters = entry.getSection("filters");
-      List<ConfigSection> entryConditionsRaw = entry.getSectionList("conditions");
-      ConfigSection effectArgs = entry.getSection("args");
+      for (ConfigSection binding : triggerBindings) {
+        if (binding == null) continue;
 
-      for (String triggerIdLower : triggers) {
+        String triggerId = binding.getString("id", null);
+        if (triggerId == null || triggerId.isBlank()) {
+          loggerService.logger().severe(
+              "Effect '" + effectId + "' has a trigger binding without id. Found in file: " + owner + ".yml"
+          );
+          continue;
+        }
+        String triggerIdLower = triggerId.toLowerCase();
+
         Set<ContextCapability> caps = schema.capabilities(triggerIdLower);
 
         List<ConditionInstance> entryConditions;
         try {
-          entryConditions = compileConditionsValidated(caps, entryConditionsRaw, owner, effectId, triggerIdLower, entryIndex);
+          entryConditions = compileConditionsValidated(
+              caps,
+              binding.getSectionList("conditions"),
+              owner,
+              effectId,
+              triggerIdLower,
+              entryIndex
+          );
         } catch (Throwable ex) {
-          loggerService.logger().severe("Invalid conditions for effect '" + effectId + "' on trigger '" + triggerIdLower + "'. Found in file: " + owner + ".yml");
+          loggerService.logger().severe(
+              "Invalid conditions for effect '" + effectId + "' on trigger '" + triggerIdLower + "'. Found in file: " + owner + ".yml"
+          );
           continue;
         }
 
@@ -284,12 +302,12 @@ public final class DefaultLogicEngineService implements LogicEngineService {
         try {
           baseEffect = compileSingleEffectValidated(caps, effectId, effectArgs, owner, triggerIdLower, entryIndex);
         } catch (Throwable ex) {
-          // compileSingleEffectValidated already logs a precise reason
           continue;
         }
 
         try {
-          Predicate<LogicContext> fp = filters.compile(triggerIdLower, entryFilters);
+          ConfigSection normalizedFilters = normalizeFilterList(binding.getSectionList("filters"));
+          Predicate<LogicContext> fp = filters.compile(triggerIdLower, normalizedFilters);
 
           List<ConditionInstance> allConds = new ArrayList<>(entryConditions);
           allConds.add(fp::test);
@@ -308,7 +326,6 @@ public final class DefaultLogicEngineService implements LogicEngineService {
               "Filter '" + filterId + "' is not compatible with trigger '" + triggerIdLower +
                   "' for effect '" + effectId + "'. Found in file: " + owner + ".yml"
           );
-          // skip only this binding
         }
       }
     }
@@ -396,6 +413,33 @@ public final class DefaultLogicEngineService implements LogicEngineService {
     Map<String, List<CompiledAction>> frozen = new HashMap<>();
     for (var e : out.entrySet()) frozen.put(e.getKey(), List.copyOf(e.getValue()));
     return Map.copyOf(frozen);
+  }
+
+  private static ConfigSection normalizeFilterList(List<ConfigSection> filtersList) {
+    if (filtersList == null || filtersList.isEmpty()) return null;
+
+    Map<String, Object> out = new LinkedHashMap<>();
+
+    for (ConfigSection f : filtersList) {
+      if (f == null) continue;
+
+      String id = f.getString("id", null);
+      if (id == null || id.isBlank()) {
+        throw new IllegalArgumentException("Filter entry missing 'id'");
+      }
+
+      Map<String, Object> raw = new LinkedHashMap<>(f.getValues(true));
+      raw.remove("id");
+
+      Object args = raw.get("args");
+      if (!(args instanceof Map<?, ?>)) {
+        args = raw; // treat remaining keys as args directly
+      }
+
+      out.put(id, Map.of("args", args));
+    }
+
+    return new MapConfigSection(out);
   }
 
   private List<ConditionInstance> compileConditionsValidated(

@@ -31,12 +31,28 @@ public final class LogicContext {
 
   private final Map<String, Object> extras = new ConcurrentHashMap<>();
 
+  // template constructor
   public LogicContext(String triggerId) {
-    this(triggerId, null, null, null, null, null, null);
+    this(
+        triggerId,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null);
   }
 
+  // template constructor with context
   public LogicContext(String triggerId, PlayerContext player) {
-    this(triggerId, player, null, null, null, null, null);
+    this(
+        triggerId,
+        player,
+        null,
+        null,
+        null,
+        null,
+        null);
   }
 
   public LogicContext(
@@ -73,36 +89,52 @@ public final class LogicContext {
   public Set<ContextCapability> capabilities() {
     return Set.copyOf(capabilities);
   }
-
   public Optional<PlayerContext> player() {
     return Optional.ofNullable(player);
   }
-
   public Optional<WorldContext> world() {
     return Optional.ofNullable(world);
   }
-
   public Optional<LocationContext> location() {
     return Optional.ofNullable(location);
   }
-
   public Optional<BlockContext> block() {
     return Optional.ofNullable(block);
   }
-
   public Optional<EntityContext> entity() {
     return Optional.ofNullable(entity);
   }
-
   public Optional<ItemContext> item() {
     return Optional.ofNullable(item);
   }
-
   public Map<String, Object> extras() {
     return extras;
   }
 
   public <T> void put(ContextKey<T> key, T value) {
+    putInternal(key, value);
+  }
+
+  public record Entry<T>(ContextKey<T> key, T value) {
+    public Entry {
+      Objects.requireNonNull(key, "key");
+      // value can be null => means "remove", analog to put()
+    }
+  }
+
+  public static <T> Entry<T> entry(ContextKey<T> key, T value) {
+    return new Entry<>(key, value);
+  }
+
+  public void putAll(Entry<?>... entries) {
+    if (entries == null) return;
+    for (Entry<?> e : entries) {
+      if (e == null) continue;
+      putInternal(e.key(), e.value());
+    }
+  }
+
+  private void putInternal(ContextKey<?> key, Object value) {
     Objects.requireNonNull(key, "key");
     if (value == null) {
       extras.remove(key.id());

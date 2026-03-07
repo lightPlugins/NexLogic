@@ -6,7 +6,7 @@ import java.util.Set;
 public final class DefaultTriggerContextSchemaService implements TriggerContextSchemaService {
 
   private final Map<String, Set<ContextCapability>> schema = Map.of(
-      "join", Set.of(ContextCapability.PLAYER),
+      "join", Set.of(ContextCapability.PLAYER, ContextCapability.WORLD, ContextCapability.LOCATION),
       "break_block", Set.of(ContextCapability.PLAYER, ContextCapability.WORLD, ContextCapability.LOCATION, ContextCapability.BLOCK)
   );
 

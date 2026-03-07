@@ -1,20 +1,23 @@
 package io.nexstudios.nexlogic.bukkit;
 
 import io.nexstudios.framework.paper.NexPaperPlugin;
+import io.nexstudios.nexlogic.bukkit.services.blocks.BlockKeyService;
+import io.nexstudios.nexlogic.bukkit.services.blocks.DefaultBlockKeyService;
 import io.nexstudios.nexlogic.bukkit.services.bootstrap.BukkitBuiltinsService;
 import io.nexstudios.nexlogic.bukkit.services.logging.BukkitLoggerService;
 import io.nexstudios.nexlogic.bukkit.services.platform.BukkitPlatformPluginService;
+import io.nexstudios.nexlogic.bukkit.types.trigger.BreakBlockTriggerType;
 import io.nexstudios.nexlogic.common.services.engine.DefaultLogicEngineService;
 import io.nexstudios.nexlogic.common.services.engine.LogicEngineService;
-import io.nexstudios.nexlogic.common.services.executor.async.AsyncExecutorService;
-import io.nexstudios.nexlogic.common.services.executor.async.DefaultAsyncExecutorService;
+import io.nexstudios.nexlogic.bukkit.services.executor.async.AsyncExecutorService;
+import io.nexstudios.nexlogic.bukkit.services.executor.async.DefaultAsyncExecutorService;
 import io.nexstudios.nexlogic.bukkit.services.config.ConfigPathService;
 import io.nexstudios.nexlogic.bukkit.services.config.DefaultConfigPathService;
 import io.nexstudios.nexlogic.bukkit.services.context.BukkitContextResolverService;
 import io.nexstudios.nexlogic.bukkit.services.context.DefaultBukkitContextResolverService;
-import io.nexstudios.nexlogic.bukkit.services.jointrigger.JoinTriggerListenerService;
-import io.nexstudios.nexlogic.common.services.executor.DefaultMainThreadExecutorService;
-import io.nexstudios.nexlogic.common.services.executor.MainThreadExecutorService;
+import io.nexstudios.nexlogic.bukkit.types.trigger.JoinTriggerType;
+import io.nexstudios.nexlogic.bukkit.services.executor.DefaultMainThreadExecutorService;
+import io.nexstudios.nexlogic.bukkit.services.executor.MainThreadExecutorService;
 import io.nexstudios.nexlogic.bukkit.services.command.NexLogicCommandService;
 import io.nexstudios.nexlogic.bukkit.services.reload.DefaultReloadService;
 import io.nexstudios.nexlogic.bukkit.services.reload.ReloadService;
@@ -55,6 +58,7 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     // Core registries and runtime
     services.register(LoggerService.class, BukkitLoggerService.class);
     services.register(PlatformPluginService.class, BukkitPlatformPluginService.class);
+    services.register(BlockKeyService.class, DefaultBlockKeyService.class);
     services.register(EffectTypeRegistryService.class, DefaultEffectTypeRegistryService.class);
     services.register(ConditionTypeRegistryService.class, DefaultConditionTypeRegistryService.class);
     services.register(AddonRegistryService.class, DefaultAddonRegistryService.class);
@@ -85,7 +89,8 @@ public final class NexLogicPlugin extends NexPaperPlugin {
 
     // Commands and triggers are services too
     services.register(NexLogicCommandService.class, NexLogicCommandService.class);
-    services.register(JoinTriggerListenerService.class, JoinTriggerListenerService.class);
+    services.register(JoinTriggerType.class, JoinTriggerType.class);
+    services.register(BreakBlockTriggerType.class, BreakBlockTriggerType.class);
   }
 
   @Override
@@ -101,8 +106,10 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     registerCommands(NexLogicCommandService.class);
 
     // Register listeners
-    var join = services().getService(JoinTriggerListenerService.class);
+    var join = services().getService(JoinTriggerType.class);
+    var breakBlock = services().getService(BreakBlockTriggerType.class);
     Bukkit.getPluginManager().registerEvents(join, this);
+    Bukkit.getPluginManager().registerEvents(breakBlock, this);
 
     // Register built-in Bukkit types (conditions/effects/filters)
     services().getService(BukkitBuiltinsService.class).registerAll();

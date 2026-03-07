@@ -43,7 +43,7 @@ public final class WorldsFilterType implements FilterTypeService {
     if (allow.isEmpty() && deny.isEmpty()) return ctx -> true;
 
     return ctx -> {
-      World world = resolver.world(ctx).orElse(null); // <- full Bukkit World object
+      World world = resolver.world(ctx).orElse(null);
       if (world == null) return false;
 
       String name = world.getName().toLowerCase();
