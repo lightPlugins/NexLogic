@@ -1,7 +1,6 @@
 package io.nexstudios.nexlogic.common.services.engine;
 
 import io.nexstudios.framework.core.key.NexKey;
-import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
 import io.nexstudios.nexlogic.common.config.ConfigSection;
 import io.nexstudios.nexlogic.common.config.MapConfigSection;
 import io.nexstudios.nexlogic.common.model.CompiledAction;
@@ -9,17 +8,19 @@ import io.nexstudios.nexlogic.common.model.LogicContext;
 import io.nexstudios.nexlogic.common.runtime.ConditionInstance;
 import io.nexstudios.nexlogic.common.runtime.EffectInstance;
 import io.nexstudios.nexlogic.common.services.filters.FilterService;
+import io.nexstudios.nexlogic.common.services.logging.LoggerService;
+import io.nexstudios.nexlogic.common.services.platform.PlatformPluginService;
 import io.nexstudios.nexlogic.common.services.registry.condition.ConditionTypeRegistryService;
 import io.nexstudios.nexlogic.common.services.registry.effect.EffectTypeRegistryService;
 import io.nexstudios.nexlogic.common.services.triggers.register.TriggerRegistrationService;
 import io.nexstudios.nexlogic.common.services.triggers.schema.ContextCapability;
 import io.nexstudios.nexlogic.common.services.triggers.schema.TriggerContextSchemaService;
 import io.nexstudios.serviceregistry.di.Dependencies;
-import org.jetbrains.annotations.NotNull;
+import io.nexstudios.serviceregistry.di.ServiceAccessor;
 
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.logging.Logger;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * A service for managing logic execution using registered conditions, effects, and triggers.
@@ -38,20 +39,20 @@ public final class DefaultLogicEngineService implements LogicEngineService {
   private final FilterService filters;
   private final TriggerRegistrationService registrations;
   private final TriggerContextSchemaService schema;
-  private final Logger logger;
+  private final LoggerService loggerService;
+  private final PlatformPluginService platformPluginService;
 
   private final String ownerNamespace;
 
-  public DefaultLogicEngineService(PaperPluginService core) {
-    var services = core.plugin().services();
-    this.conditions = services.getService(ConditionTypeRegistryService.class);
-    this.effects = services.getService(EffectTypeRegistryService.class);
-    this.filters = services.getService(FilterService.class);
-    this.registrations = services.getService(TriggerRegistrationService.class);
-    this.schema = services.getService(TriggerContextSchemaService.class);
-    this.logger = core.plugin().getLogger();
-
-    this.ownerNamespace = NexKey.normalizeNamespace(core.plugin().getName());
+  public DefaultLogicEngineService(ServiceAccessor accessor) {
+    this.conditions = accessor.getService(ConditionTypeRegistryService.class);
+    this.effects = accessor.getService(EffectTypeRegistryService.class);
+    this.filters = accessor.getService(FilterService.class);
+    this.registrations = accessor.getService(TriggerRegistrationService.class);
+    this.schema = accessor.getService(TriggerContextSchemaService.class);
+    this.loggerService = accessor.getService(LoggerService.class);
+    this.platformPluginService = accessor.getService(PlatformPluginService.class);
+    this.ownerNamespace = NexKey.normalizeNamespace(platformPluginService.name());
   }
 
   @Override
@@ -80,7 +81,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
       var compiled = compileConditions(conditionsList);
       return safeTestAll(compiled, ctx);
     } catch (Throwable t) {
-      logger.severe("Invalid conditions list: " + t.getMessage());
+      loggerService.logger().severe("Invalid conditions list: " + t.getMessage());
       return false;
     }
   }
@@ -92,7 +93,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
       var compiled = compileEffects(effectsList);
       safeRunAll(compiled, ctx, "inline");
     } catch (Throwable t) {
-      logger.severe("Invalid effects list: " + t.getMessage());
+      loggerService.logger().severe("Invalid effects list: " + t.getMessage());
     }
   }
 
@@ -118,7 +119,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
       } catch (Throwable ex) {
         String effectId = entry.getString("id", "?");
         String filterId = extractFilterId(ex.getMessage()).orElse("?");
-        logger.severe("Filter '" + filterId + "' is not compatible with trigger '" + t + "' for effect '" + effectId + "'.");
+        loggerService.logger().severe("Filter '" + filterId + "' is not compatible with trigger '" + t + "' for effect '" + effectId + "'.");
         return false;
       }
 
@@ -126,7 +127,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
       try {
         filtersOk = fp.test(ctx);
       } catch (Throwable ex) {
-        logger.severe("A filter threw an exception while evaluating trigger '" + t + "': " + ex.getMessage());
+        loggerService.logger().severe("A filter threw an exception while evaluating trigger '" + t + "': " + ex.getMessage());
         continue;
       }
       if (!filtersOk) continue;
@@ -142,7 +143,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
         ConfigSection args = entry.getSection("args");
         inst = svc.create(args == null ? MapConfigSection.EMPTY : args);
       } catch (Throwable ex) {
-        logger.severe("Unknown/invalid effect '" + effectId + "' (trigger '" + t + "'): " + ex.getMessage());
+        loggerService.logger().severe("Unknown/invalid effect '" + effectId + "' (trigger '" + t + "'): " + ex.getMessage());
         continue;
       }
 
@@ -175,7 +176,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
         fp = filters.compile(t, triggerEntry.getSection("filters"));
       } catch (Throwable ex) {
         String filterId = extractFilterId(ex.getMessage()).orElse("?");
-        logger.severe("Filter '" + filterId + "' is not compatible with trigger '" + t + "'.");
+        loggerService.logger().severe("Filter '" + filterId + "' is not compatible with trigger '" + t + "'.");
         return false;
       }
 
@@ -183,7 +184,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
       try {
         filtersOk = fp.test(ctx);
       } catch (Throwable ex) {
-        logger.severe("A filter threw an exception while evaluating trigger '" + t + "': " + ex.getMessage());
+        loggerService.logger().severe("A filter threw an exception while evaluating trigger '" + t + "': " + ex.getMessage());
         continue;
       }
       if (!filtersOk) continue;
@@ -256,13 +257,13 @@ public final class DefaultLogicEngineService implements LogicEngineService {
 
       String effectId = entry.getString("id", null);
       if (effectId == null || effectId.isBlank()) {
-        logger.severe("Invalid effect entry (missing id). Found in file: " + owner + ".yml");
+        loggerService.logger().severe("Invalid effect entry (missing id). Found in file: " + owner + ".yml");
         continue;
       }
 
       List<String> triggers = toLowerStringList(entry.getSectionList("triggers"));
       if (triggers.isEmpty()) {
-        logger.severe("Effect '" + effectId + "' has no triggers. Found in file: " + owner + ".yml");
+        loggerService.logger().severe("Effect '" + effectId + "' has no triggers. Found in file: " + owner + ".yml");
         continue;
       }
 
@@ -277,7 +278,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
         try {
           entryConditions = compileConditionsValidated(caps, entryConditionsRaw, owner, effectId, triggerIdLower, entryIndex);
         } catch (Throwable ex) {
-          logger.severe("Invalid conditions for effect '" + effectId + "' on trigger '" + triggerIdLower + "'. Found in file: " + owner + ".yml");
+          loggerService.logger().severe("Invalid conditions for effect '" + effectId + "' on trigger '" + triggerIdLower + "'. Found in file: " + owner + ".yml");
           continue;
         }
 
@@ -305,7 +306,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
           out.computeIfAbsent(triggerIdLower, k -> new ArrayList<>()).add(ca);
         } catch (Throwable ex) {
           String filterId = extractFilterId(ex.getMessage()).orElse("?");
-          logger.severe(
+          loggerService.logger().severe(
               "Filter '" + filterId + "' is not compatible with trigger '" + triggerIdLower +
                   "' for effect '" + effectId + "'. Found in file: " + owner + ".yml"
           );
@@ -330,7 +331,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
 
       String triggerId = tEntry.getString("id", null);
       if (triggerId == null || triggerId.isBlank()) {
-        logger.severe("Invalid trigger entry (missing id). Found in file: " + owner);
+        loggerService.logger().severe("Invalid trigger entry (missing id). Found in file: " + owner);
         continue;
       }
       String triggerIdLower = triggerId.toLowerCase();
@@ -341,7 +342,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
       try {
         triggerConditions = compileConditionsValidated(caps, tEntry.getSectionList("conditions"), owner, "trigger:" + triggerIdLower, triggerIdLower, triggerIndex);
       } catch (Throwable ex) {
-        logger.severe("Invalid conditions for trigger '" + triggerIdLower + "'. Found in file: " + owner + ".yml");
+        loggerService.logger().severe("Invalid conditions for trigger '" + triggerIdLower + "'. Found in file: " + owner + ".yml");
         continue;
       }
 
@@ -350,7 +351,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
         fp = filters.compile(triggerIdLower, tEntry.getSection("filters"));
       } catch (Throwable ex) {
         String filterId = extractFilterId(ex.getMessage()).orElse("?");
-        logger.severe("Filter '" + filterId + "' is not compatible with trigger '" + triggerIdLower + "'. Found in file: " + owner + ".yml");
+        loggerService.logger().severe("Filter '" + filterId + "' is not compatible with trigger '" + triggerIdLower + "'. Found in file: " + owner + ".yml");
         continue;
       }
 
@@ -366,7 +367,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
 
         String effectId = eEntry.getString("id", null);
         if (effectId == null || effectId.isBlank()) {
-          logger.severe("Invalid nested effect (missing id). Found in file: " + owner + ".yml");
+          loggerService.logger().severe("Invalid nested effect (missing id). Found in file: " + owner + ".yml");
           continue;
         }
 
@@ -380,7 +381,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
       }
 
       if (compiledEffects.isEmpty()) {
-        logger.severe("Trigger '" + triggerIdLower + "' has no valid effects after compatibility checks. Found in file: " + owner + ".yml");
+        loggerService.logger().severe("Trigger '" + triggerIdLower + "' has no valid effects after compatibility checks. Found in file: " + owner + ".yml");
         continue;
       }
 
@@ -426,7 +427,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
         Set<ContextCapability> missing = EnumSet.copyOf(required);
         missing.removeAll(caps);
 
-        logger.severe(
+        loggerService.logger().severe(
             "Skipping condition '" + id + "' for '" + subjectId + "' on trigger '" + triggerIdLower + "' (owner '" + owner + "'): " +
                 "missing capabilities " + missing + ", provided " + caps + " (entryIndex=" + indexForLog + ", conditionIndex=" + i + ")"
         );
@@ -457,7 +458,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
       Set<ContextCapability> missing = EnumSet.copyOf(required);
       missing.removeAll(caps);
 
-      logger.severe(
+      loggerService.logger().severe(
           "Skipping effect '" + effectId + "' on trigger '" + triggerIdLower + "' (owner '" + owner + "'): " +
               "missing capabilities " + missing + ", provided " + caps + " (index=" + indexForLog + ")"
       );
@@ -520,7 +521,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
       try {
         ok = c.test(ctx);
       } catch (Throwable t) {
-        logger.severe("A condition threw an exception: " + t.getMessage());
+        loggerService.logger().severe("A condition threw an exception: " + t.getMessage());
         return false;
       }
       if (!ok) return false;
@@ -533,7 +534,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
       try {
         e.run(ctx);
       } catch (Throwable t) {
-        logger.severe("An effect threw an exception (" + tag + "): " + t.getMessage());
+        loggerService.logger().severe("An effect threw an exception (" + tag + "): " + t.getMessage());
       }
     }
   }

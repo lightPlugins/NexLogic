@@ -2,6 +2,8 @@ package io.nexstudios.nexlogic.bukkit;
 
 import io.nexstudios.framework.paper.NexPaperPlugin;
 import io.nexstudios.nexlogic.bukkit.services.bootstrap.BukkitBuiltinsService;
+import io.nexstudios.nexlogic.bukkit.services.logging.BukkitLoggerService;
+import io.nexstudios.nexlogic.bukkit.services.platform.BukkitPlatformPluginService;
 import io.nexstudios.nexlogic.common.services.engine.DefaultLogicEngineService;
 import io.nexstudios.nexlogic.common.services.engine.LogicEngineService;
 import io.nexstudios.nexlogic.common.services.executor.async.AsyncExecutorService;
@@ -18,6 +20,8 @@ import io.nexstudios.nexlogic.bukkit.services.reload.DefaultReloadService;
 import io.nexstudios.nexlogic.bukkit.services.reload.ReloadService;
 import io.nexstudios.nexlogic.bukkit.services.loader.DefaultYamlLoaderService;
 import io.nexstudios.nexlogic.bukkit.services.loader.YamlLoaderService;
+import io.nexstudios.nexlogic.common.services.logging.LoggerService;
+import io.nexstudios.nexlogic.common.services.platform.PlatformPluginService;
 import io.nexstudios.nexlogic.common.services.runtime.ActionRuntimeService;
 import io.nexstudios.nexlogic.common.services.runtime.DefaultActionRuntimeService;
 import io.nexstudios.nexlogic.common.services.registry.addon.AddonRegistryService;
@@ -49,6 +53,8 @@ public final class NexLogicPlugin extends NexPaperPlugin {
   @Override
   protected void configureServices(@NotNull ServiceAccessor services) {
     // Core registries and runtime
+    services.register(LoggerService.class, BukkitLoggerService.class);
+    services.register(PlatformPluginService.class, BukkitPlatformPluginService.class);
     services.register(EffectTypeRegistryService.class, DefaultEffectTypeRegistryService.class);
     services.register(ConditionTypeRegistryService.class, DefaultConditionTypeRegistryService.class);
     services.register(AddonRegistryService.class, DefaultAddonRegistryService.class);

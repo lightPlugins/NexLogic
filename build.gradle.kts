@@ -1,5 +1,6 @@
 plugins {
     id("java")
+    id("io.freefair.lombok") version "8.13.1" apply false
 }
 
 allprojects {
@@ -16,6 +17,12 @@ allprojects {
 
 subprojects {
     apply(plugin = "java")
+    apply(plugin = "io.freefair.lombok")
+
+    dependencies {
+        compileOnly("org.jetbrains:annotations:26.0.2")
+        testCompileOnly("org.jetbrains:annotations:26.0.2")
+    }
 
     java {
         toolchain {
