@@ -7,11 +7,15 @@ import io.nexstudios.nexlogic.common.config.LogicData;
 import io.nexstudios.nexlogic.common.model.LogicContext;
 import io.nexstudios.nexlogic.common.services.triggers.schema.ContextCapability;
 import io.nexstudios.nexlogic.common.types.FilterTypeService;
+import io.nexstudios.serviceregistry.di.Dependencies;
 import org.bukkit.World;
 
 import java.util.Set;
 import java.util.function.Predicate;
 
+@Dependencies({
+    BukkitContextResolverService.class
+})
 public final class WorldsFilterType implements FilterTypeService {
 
   private final BukkitContextResolverService resolver;
