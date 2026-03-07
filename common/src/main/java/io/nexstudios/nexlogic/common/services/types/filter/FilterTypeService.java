@@ -1,0 +1,17 @@
+package io.nexstudios.nexlogic.common.services.types.filter;
+
+import io.nexstudios.nexlogic.common.config.ConfigSection;
+import io.nexstudios.nexlogic.common.model.LogicContext;
+import io.nexstudios.nexlogic.common.services.triggers.schema.ContextCapability;
+import io.nexstudios.serviceregistry.di.Service;
+
+import java.util.Set;
+import java.util.function.Predicate;
+
+public interface FilterTypeService extends Service {
+  String id();
+
+  Set<ContextCapability> requiredCapabilities();
+
+  Predicate<LogicContext> compile(String triggerId, ConfigSection args);
+}
