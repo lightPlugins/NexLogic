@@ -1,11 +1,25 @@
 settings:
+  # Whether this placeholder file should be loaded.
   enable: true
+
+  # Default identifier (namespace) used when referencing placeholders without an explicit identifier.
+  # Example: "%some_placeholder%" will be treated as "%nexlogic:some_placeholder%" if identifier is "nexlogic".
   identifier: 'nexlogic'
+
+  # Default cache TTL (time-to-live) in milliseconds for placeholders in this file.
+  # 0 disables caching unless an entry overrides it.
   ttl-millis: 5000
+
 placeholders:
+  # List of placeholders provided by this file.
+  # Each entry must have:
+  # - id: placeholder id (lowercased internally)
+  # - value: expression/text; may reference other placeholders via "%...%".
   - id: 'some_placeholder'
     value: '50 + 10'
+
   - id: 'some_other_placeholder'
     value: '%some_placeholder% - 10'
+
   - id: 'some_third_placeholder'
     value: '(%some_other_placeholder% + %some_placeholder%) * 2'
