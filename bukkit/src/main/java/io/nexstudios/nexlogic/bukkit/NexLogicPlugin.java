@@ -77,7 +77,6 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     services.register(PlatformPluginService.class, BukkitPlatformPluginService.class);
     services.register(BlockKeyService.class, DefaultBlockKeyService.class);
     services.register(EntityKeyService.class, DefaultEntityKeyService.class);
-
     // Placeholders
     services.register(PlaceholderYamlLoaderService.class, DefaultPlaceholderYamlLoaderService.class);
     services.register(PlaceholderResolveOptionsService.class, DefaultPlaceholderResolveOptionsService.class);
@@ -91,7 +90,7 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     services.register(AddonRegistryService.class, DefaultAddonRegistryService.class);
     // Trigger schema MUST exist before FilterService is instantiated
     services.register(TriggerContextSchemaService.class, DefaultTriggerContextSchemaService.class);
-    // Filters MUST be registered before services that depend on FilterService (e.g. TriggerRuleRegistry)
+    // Filters MUST be registered before services that depend on FilterService
     services.register(FilterTypeRegistryService.class, DefaultFilterTypeRegistryService.class);
     services.register(FilterService.class, DefaultFilterService.class);
     // Built-in Bukkit registrations (effects/conditions/filters)
