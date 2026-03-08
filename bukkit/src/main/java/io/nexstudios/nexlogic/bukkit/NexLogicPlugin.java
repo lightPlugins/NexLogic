@@ -105,8 +105,9 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     services.register(ConfigPathService.class, DefaultConfigPathService.class);
     services.register(YamlLoaderService.class, DefaultYamlLoaderService.class);
     services.register(ReloadService.class, DefaultReloadService.class);
-    // Commands and triggers are services too
+    // Commands
     services.register(LogicCommandService.class, LogicCommandService.class);
+    // triggers
     services.register(PlayerJoinTriggerType.class, PlayerJoinTriggerType.class);
     services.register(BlockBreakTriggerType.class, BlockBreakTriggerType.class);
     services.register(BlockPlaceTriggerType.class, BlockPlaceTriggerType.class);
