@@ -1,6 +1,6 @@
 package io.nexstudios.nexlogic.common.services.registry.condition;
 
-import io.nexstudios.nexlogic.common.types.ConditionTypeService;
+import io.nexstudios.nexlogic.common.effects.types.ConditionTypeService;
 import io.nexstudios.serviceregistry.di.Service;
 
 import java.util.Optional;

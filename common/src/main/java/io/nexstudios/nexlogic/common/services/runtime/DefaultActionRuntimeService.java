@@ -1,7 +1,7 @@
 package io.nexstudios.nexlogic.common.services.runtime;
 
-import io.nexstudios.nexlogic.common.model.CompiledAction;
-import io.nexstudios.nexlogic.common.model.LogicContext;
+import io.nexstudios.nexlogic.common.effects.model.CompiledAction;
+import io.nexstudios.nexlogic.common.effects.model.LogicContext;
 import io.nexstudios.nexlogic.common.services.logging.LoggerService;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
 

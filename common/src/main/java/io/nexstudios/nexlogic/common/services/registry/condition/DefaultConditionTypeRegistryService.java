@@ -1,6 +1,6 @@
 package io.nexstudios.nexlogic.common.services.registry.condition;
 
-import io.nexstudios.nexlogic.common.types.ConditionTypeService;
+import io.nexstudios.nexlogic.common.effects.types.ConditionTypeService;
 
 import java.util.Map;
 import java.util.Objects;

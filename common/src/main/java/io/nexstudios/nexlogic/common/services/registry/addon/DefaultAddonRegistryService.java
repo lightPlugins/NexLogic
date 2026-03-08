@@ -1,10 +1,10 @@
 package io.nexstudios.nexlogic.common.services.registry.addon;
 
-import io.nexstudios.nexlogic.common.addon.NexLogicAddon;
+import io.nexstudios.nexlogic.common.effects.addon.NexLogicAddon;
 import io.nexstudios.nexlogic.common.services.registry.condition.ConditionTypeRegistryService;
-import io.nexstudios.nexlogic.common.types.ConditionTypeService;
+import io.nexstudios.nexlogic.common.effects.types.ConditionTypeService;
 import io.nexstudios.nexlogic.common.services.registry.effect.EffectTypeRegistryService;
-import io.nexstudios.nexlogic.common.types.EffectTypeService;
+import io.nexstudios.nexlogic.common.effects.types.EffectTypeService;
 import io.nexstudios.serviceregistry.di.Dependencies;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
 

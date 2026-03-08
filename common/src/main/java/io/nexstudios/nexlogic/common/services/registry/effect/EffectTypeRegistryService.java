@@ -1,6 +1,6 @@
 package io.nexstudios.nexlogic.common.services.registry.effect;
 
-import io.nexstudios.nexlogic.common.types.EffectTypeService;
+import io.nexstudios.nexlogic.common.effects.types.EffectTypeService;
 import io.nexstudios.serviceregistry.di.Service;
 
 import java.util.Optional;

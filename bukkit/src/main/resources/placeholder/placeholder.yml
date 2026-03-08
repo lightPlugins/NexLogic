@@ -1,0 +1,11 @@
+settings:
+  enable: true
+  identifier: 'nexlogic'
+  ttl-millis: 5000
+placeholders:
+  - id: 'some_placeholder'
+    value: '50 + 10'
+  - id: 'some_other_placeholder'
+    value: '%some_placeholder% - 10'
+  - id: 'some_third_placeholder'
+    value: '(%some_other_placeholder% + %some_placeholder%) * 2'

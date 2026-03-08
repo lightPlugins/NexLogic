@@ -3,7 +3,7 @@ enabled: true
 effects:
   - id: log
     args:
-      message: "Some Test printed in the console"
+      message: "Some Test Placeholder: %nexlogic:some_placeholder%"
     trigger:
       - id: break_block
         conditions: [ ]

@@ -1,0 +1,59 @@
+package io.nexstudios.nexlogic.bukkit.effects.effects;
+
+import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
+import io.nexstudios.nexlogic.bukkit.services.effects.context.BukkitContextKeys;
+import io.nexstudios.nexlogic.bukkit.services.placeholder.runtime.PlaceholderRuntimeService;
+import io.nexstudios.nexlogic.common.effects.config.ConfigSection;
+import io.nexstudios.nexlogic.common.effects.runtime.EffectInstance;
+import io.nexstudios.nexlogic.bukkit.services.effects.executor.MainThreadExecutorService;
+import io.nexstudios.nexlogic.common.services.triggers.schema.ContextCapability;
+import io.nexstudios.nexlogic.common.effects.types.EffectTypeService;
+import io.nexstudios.serviceregistry.di.Dependencies;
+import org.bukkit.entity.Player;
+
+import java.util.Set;
+
+@Dependencies({
+    PlaceholderRuntimeService.class
+})
+public final class MessageEffectType implements EffectTypeService {
+
+  private final MainThreadExecutorService mainThread;
+  private final PlaceholderRuntimeService placeholders;
+
+  public MessageEffectType(PaperPluginService core) {
+    this.mainThread = core.plugin().services().getService(MainThreadExecutorService.class);
+    this.placeholders = core.plugin().services().getService(PlaceholderRuntimeService.class);
+  }
+
+  @Override
+  public String id() {
+    return "message";
+  }
+
+  @Override
+  public Set<ContextCapability> requiredCapabilities() {
+    return Set.of(ContextCapability.PLAYER);
+  }
+
+  @Override
+  public EffectInstance create(ConfigSection args) {
+    String message = args == null ? "" : args.getString("message", "");
+
+    return ctx -> {
+      if (ctx == null) return;
+
+      Player p = ctx.get(BukkitContextKeys.PLAYER).orElse(null);
+      if (p == null || !p.isOnline()) return;
+
+      String resolved = placeholders.resolve(message, ctx);
+
+      Runnable send = () -> {
+        if (p.isOnline()) p.sendMessage(resolved);
+      };
+
+      if (mainThread.isMainThread()) send.run();
+      else mainThread.execute(send);
+    };
+  }
+}

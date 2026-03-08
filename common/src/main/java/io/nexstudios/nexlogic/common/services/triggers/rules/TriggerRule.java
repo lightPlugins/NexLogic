@@ -1,6 +1,6 @@
 package io.nexstudios.nexlogic.common.services.triggers.rules;
 
-import io.nexstudios.nexlogic.common.model.LogicContext;
+import io.nexstudios.nexlogic.common.effects.model.LogicContext;
 
 import java.util.Objects;
 import java.util.function.Predicate;

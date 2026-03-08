@@ -21,6 +21,7 @@ subprojects {
 
     dependencies {
         compileOnly("org.jetbrains:annotations:26.0.2")
+        implementation("com.ezylang:EvalEx:3.6.0")
         testCompileOnly("org.jetbrains:annotations:26.0.2")
     }
 

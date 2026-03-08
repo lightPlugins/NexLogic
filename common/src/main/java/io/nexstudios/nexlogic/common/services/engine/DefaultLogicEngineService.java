@@ -1,12 +1,12 @@
 package io.nexstudios.nexlogic.common.services.engine;
 
 import io.nexstudios.framework.core.key.NexKey;
-import io.nexstudios.nexlogic.common.config.ConfigSection;
-import io.nexstudios.nexlogic.common.config.MapConfigSection;
-import io.nexstudios.nexlogic.common.model.CompiledAction;
-import io.nexstudios.nexlogic.common.model.LogicContext;
-import io.nexstudios.nexlogic.common.runtime.ConditionInstance;
-import io.nexstudios.nexlogic.common.runtime.EffectInstance;
+import io.nexstudios.nexlogic.common.effects.config.ConfigSection;
+import io.nexstudios.nexlogic.common.effects.config.MapConfigSection;
+import io.nexstudios.nexlogic.common.effects.model.CompiledAction;
+import io.nexstudios.nexlogic.common.effects.model.LogicContext;
+import io.nexstudios.nexlogic.common.effects.runtime.ConditionInstance;
+import io.nexstudios.nexlogic.common.effects.runtime.EffectInstance;
 import io.nexstudios.nexlogic.common.services.filters.FilterService;
 import io.nexstudios.nexlogic.common.services.logging.LoggerService;
 import io.nexstudios.nexlogic.common.services.platform.PlatformPluginService;

@@ -1,0 +1,6 @@
+placeholder:
+  resolve:
+    max-depth: 16
+    max-tokens-per-input: 4096
+  cache:
+    max-cache-entries: 100000

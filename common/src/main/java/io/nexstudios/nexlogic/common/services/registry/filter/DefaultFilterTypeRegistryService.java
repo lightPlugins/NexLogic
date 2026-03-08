@@ -1,6 +1,6 @@
 package io.nexstudios.nexlogic.common.services.registry.filter;
 
-import io.nexstudios.nexlogic.common.types.FilterTypeService;
+import io.nexstudios.nexlogic.common.effects.types.FilterTypeService;
 
 import java.util.Map;
 import java.util.Objects;

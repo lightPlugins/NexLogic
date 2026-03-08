@@ -1,8 +1,8 @@
 package io.nexstudios.nexlogic.common.services.filters;
 
-import io.nexstudios.nexlogic.common.config.ConfigSection;
-import io.nexstudios.nexlogic.common.config.MapConfigSection;
-import io.nexstudios.nexlogic.common.model.LogicContext;
+import io.nexstudios.nexlogic.common.effects.config.ConfigSection;
+import io.nexstudios.nexlogic.common.effects.config.MapConfigSection;
+import io.nexstudios.nexlogic.common.effects.model.LogicContext;
 import io.nexstudios.nexlogic.common.services.registry.filter.FilterTypeRegistryService;
 import io.nexstudios.nexlogic.common.services.triggers.schema.TriggerContextSchemaService;
 import io.nexstudios.serviceregistry.di.Dependencies;

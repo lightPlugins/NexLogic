@@ -1,8 +1,7 @@
 package io.nexstudios.nexlogic.common.services.triggers.bus;
 
-import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
-import io.nexstudios.nexlogic.common.model.CompiledAction;
-import io.nexstudios.nexlogic.common.model.LogicContext;
+import io.nexstudios.nexlogic.common.effects.model.CompiledAction;
+import io.nexstudios.nexlogic.common.effects.model.LogicContext;
 import io.nexstudios.nexlogic.common.services.triggers.register.TriggerRegistrationService;
 import io.nexstudios.nexlogic.common.services.triggers.runtime.TriggerRuntimeService;
 import io.nexstudios.serviceregistry.di.Dependencies;
