@@ -5,17 +5,18 @@ effects:
     args:
       message: "Some Test Placeholder: %nexlogic:some_placeholder%"
     trigger:
-      - id: break_block
-        conditions: [ ]
+      - id: block-break
+        conditions:
+          - id: player-placed
+            value: false
         filters:
           - id: blocks
             blocks:
               - 'minecraft:stone'
               - 'minecraft:dirt'
-      - id: join
+      - id: block-place
         conditions: [ ]
         filters:
-          - id: worlds
-            worlds:
-              - 'world'
-              - 'some_test_world'
+          - id: blocks
+            blocks:
+              - 'minecraft:diamond_ore'

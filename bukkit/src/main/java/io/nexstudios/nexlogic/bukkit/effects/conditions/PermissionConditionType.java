@@ -39,10 +39,7 @@ public final class PermissionConditionType implements ConditionTypeService {
     return ctx -> {
       ConfigSection resolved = placeholders.resolveSection(args, ctx);
 
-      String perm = Objects.requireNonNull(
-          resolved.getString("permission", null),
-          "permission.args.permission is required"
-      );
+      String perm = resolved.getString("permission", null);
 
       Player p = ctx == null ? null : ctx.get(BukkitContextKeys.PLAYER).orElse(null);
       if (p == null || !p.isOnline()) return false;

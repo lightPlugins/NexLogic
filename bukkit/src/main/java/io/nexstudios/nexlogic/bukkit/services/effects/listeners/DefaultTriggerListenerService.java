@@ -3,8 +3,9 @@ package io.nexstudios.nexlogic.bukkit.services.effects.listeners;
 import io.nexstudios.framework.paper.NexPaperPlugin;
 import io.nexstudios.framework.paper.services.ServiceListener;
 import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
-import io.nexstudios.nexlogic.bukkit.effects.trigger.BreakBlockTriggerType;
-import io.nexstudios.nexlogic.bukkit.effects.trigger.JoinTriggerType;
+import io.nexstudios.nexlogic.bukkit.effects.trigger.BlockBreakTriggerType;
+import io.nexstudios.nexlogic.bukkit.effects.trigger.PlayerJoinTriggerType;
+import io.nexstudios.nexlogic.bukkit.effects.trigger.BlockPlaceTriggerType;
 import io.nexstudios.serviceregistry.di.Dependencies;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
 import org.bukkit.Bukkit;
@@ -16,8 +17,9 @@ import java.util.Objects;
  * Registers Bukkit event listeners for built-in trigger types.
  */
 @Dependencies({
-    JoinTriggerType.class,
-    BreakBlockTriggerType.class
+    PlayerJoinTriggerType.class,
+    BlockBreakTriggerType.class,
+    BlockPlaceTriggerType.class
 })
 public final class DefaultTriggerListenerService implements TriggerListenerService {
 
@@ -30,8 +32,9 @@ public final class DefaultTriggerListenerService implements TriggerListenerServi
    * Bukkit events such as player joining and block breaking.
    */
   private final List<Class<? extends ServiceListener>> listenerTypes = List.of(
-      JoinTriggerType.class,
-      BreakBlockTriggerType.class
+      PlayerJoinTriggerType.class,
+      BlockBreakTriggerType.class,
+      BlockPlaceTriggerType.class
   );
 
   public DefaultTriggerListenerService(PaperPluginService core) {

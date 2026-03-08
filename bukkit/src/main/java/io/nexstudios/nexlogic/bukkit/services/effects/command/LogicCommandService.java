@@ -16,12 +16,12 @@ import io.nexstudios.serviceregistry.di.ServiceAccessor;
 @Dependencies({
     ReloadService.class
 })
-public final class NexLogicCommandService implements Service {
+public final class LogicCommandService implements Service {
 
   private final ServiceAccessor services;
   private final ReloadService reload;
 
-  public NexLogicCommandService(PaperPluginService core) {
+  public LogicCommandService(PaperPluginService core) {
     this.services = core.plugin().services();
     this.reload = services.getService(ReloadService.class);
   }

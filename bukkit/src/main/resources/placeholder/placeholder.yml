@@ -16,7 +16,7 @@ placeholders:
   # - id: placeholder id (lowercased internally)
   # - value: expression/text; may reference other placeholders via "%...%".
   - id: 'some_placeholder'
-    value: '50 + 10'
+    value: 'floor((10 + 3.9) / 2.0)'
 
   - id: 'some_other_placeholder'
     value: '%some_placeholder% - 10'

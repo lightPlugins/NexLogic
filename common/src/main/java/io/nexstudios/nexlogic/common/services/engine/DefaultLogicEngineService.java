@@ -476,8 +476,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
         throw new IllegalArgumentException("Incompatible condition '" + id + "'");
       }
 
-      ConfigSection args = entry.getSection("args");
-      out.add(svc.create(args == null ? MapConfigSection.EMPTY : args));
+      out.add(svc.create(entry));
     }
 
     return List.copyOf(out);
@@ -524,8 +523,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
           new IllegalArgumentException("Unknown condition id '" + id + "'")
       );
 
-      ConfigSection args = entry.getSection("args");
-      out.add(svc.create(args == null ? MapConfigSection.EMPTY : args));
+      out.add(svc.create(entry));
     }
     return List.copyOf(out);
   }

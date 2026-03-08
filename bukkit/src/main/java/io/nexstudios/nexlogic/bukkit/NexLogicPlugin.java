@@ -1,14 +1,15 @@
 package io.nexstudios.nexlogic.bukkit;
 
 import io.nexstudios.framework.paper.NexPaperPlugin;
+import io.nexstudios.nexlogic.bukkit.effects.trigger.BlockPlaceTriggerType;
 import io.nexstudios.nexlogic.bukkit.services.effects.blocks.BlockKeyService;
 import io.nexstudios.nexlogic.bukkit.services.effects.blocks.DefaultBlockKeyService;
+import io.nexstudios.nexlogic.bukkit.services.effects.blocks.PlayerPlacedBlockTrackerService;
 import io.nexstudios.nexlogic.bukkit.services.effects.bootstrap.TypeBuiltinService;
-import io.nexstudios.nexlogic.bukkit.services.effects.listeners.TriggerListenerService;
-import io.nexstudios.nexlogic.bukkit.services.effects.listeners.DefaultTriggerListenerService;
+import io.nexstudios.nexlogic.bukkit.services.effects.listeners.*;
 import io.nexstudios.nexlogic.bukkit.services.effects.logging.BukkitLoggerService;
 import io.nexstudios.nexlogic.bukkit.services.effects.platform.BukkitPlatformPluginService;
-import io.nexstudios.nexlogic.bukkit.effects.trigger.BreakBlockTriggerType;
+import io.nexstudios.nexlogic.bukkit.effects.trigger.BlockBreakTriggerType;
 import io.nexstudios.nexlogic.bukkit.services.placeholder.DefaultPlaceholderReloadService;
 import io.nexstudios.nexlogic.bukkit.services.placeholder.PlaceholderReloadService;
 import io.nexstudios.nexlogic.bukkit.services.placeholder.loader.DefaultPlaceholderYamlLoaderService;
@@ -26,10 +27,10 @@ import io.nexstudios.nexlogic.bukkit.services.effects.config.ConfigPathService;
 import io.nexstudios.nexlogic.bukkit.services.effects.config.DefaultConfigPathService;
 import io.nexstudios.nexlogic.bukkit.services.effects.context.BukkitContextResolverService;
 import io.nexstudios.nexlogic.bukkit.services.effects.context.DefaultBukkitContextResolverService;
-import io.nexstudios.nexlogic.bukkit.effects.trigger.JoinTriggerType;
+import io.nexstudios.nexlogic.bukkit.effects.trigger.PlayerJoinTriggerType;
 import io.nexstudios.nexlogic.bukkit.services.effects.executor.DefaultMainThreadExecutorService;
 import io.nexstudios.nexlogic.bukkit.services.effects.executor.MainThreadExecutorService;
-import io.nexstudios.nexlogic.bukkit.services.effects.command.NexLogicCommandService;
+import io.nexstudios.nexlogic.bukkit.services.effects.command.LogicCommandService;
 import io.nexstudios.nexlogic.bukkit.services.effects.reload.DefaultReloadService;
 import io.nexstudios.nexlogic.bukkit.services.effects.reload.ReloadService;
 import io.nexstudios.nexlogic.bukkit.services.effects.loader.DefaultYamlLoaderService;
@@ -73,11 +74,11 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     services.register(PlatformPluginService.class, BukkitPlatformPluginService.class);
     services.register(BlockKeyService.class, DefaultBlockKeyService.class);
     // Placeholders
-    services.register(PlaceholderService.class, DefaultPlaceholderService.class);
     services.register(PlaceholderYamlLoaderService.class, DefaultPlaceholderYamlLoaderService.class);
-    services.register(PlaceholderReloadService.class, DefaultPlaceholderReloadService.class);
     services.register(PlaceholderResolveOptionsService.class, DefaultPlaceholderResolveOptionsService.class);
     services.register(PlaceholderCacheOptionsService.class, DefaultPlaceholderCacheOptionsService.class);
+    services.register(PlaceholderService.class, DefaultPlaceholderService.class);
+    services.register(PlaceholderReloadService.class, DefaultPlaceholderReloadService.class);
     services.register(PlaceholderRuntimeService.class, DefaultPlaceholderRuntimeService.class);
     // mvp registries
     services.register(EffectTypeRegistryService.class, DefaultEffectTypeRegistryService.class);
@@ -98,15 +99,22 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     services.register(LogicEngineService.class, DefaultLogicEngineService.class);
     // Bukkit-specific
     services.register(BukkitContextResolverService.class, DefaultBukkitContextResolverService.class);
+    services.register(PlayerPlacedBlockTrackerService.class, PlayerPlacedBlockTrackerService.class);
     services.register(MainThreadExecutorService.class, DefaultMainThreadExecutorService.class);
     services.register(AsyncExecutorService.class, DefaultAsyncExecutorService.class);
     services.register(ConfigPathService.class, DefaultConfigPathService.class);
     services.register(YamlLoaderService.class, DefaultYamlLoaderService.class);
     services.register(ReloadService.class, DefaultReloadService.class);
     // Commands and triggers are services too
-    services.register(NexLogicCommandService.class, NexLogicCommandService.class);
-    services.register(JoinTriggerType.class, JoinTriggerType.class);
-    services.register(BreakBlockTriggerType.class, BreakBlockTriggerType.class);
+    services.register(LogicCommandService.class, LogicCommandService.class);
+    services.register(PlayerJoinTriggerType.class, PlayerJoinTriggerType.class);
+    services.register(BlockBreakTriggerType.class, BlockBreakTriggerType.class);
+    services.register(BlockPlaceTriggerType.class, BlockPlaceTriggerType.class);
+    // Player-placed maintenance listeners
+    services.register(PistonMoveListener.class, PistonMoveListener.class);
+    services.register(ExplosionCleanupListener.class, ExplosionCleanupListener.class);
+    services.register(BlockTransformCleanupListener.class, BlockTransformCleanupListener.class);
+    services.register(FallingBlockCleanupListener.class, FallingBlockCleanupListener.class);
     // Trigger listener registration
     services.register(TriggerListenerService.class, DefaultTriggerListenerService.class);
   }
@@ -121,7 +129,7 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     getLogger().info("NexLogic is starting...");
 
     // Register commands via NexFramework command system
-    registerCommands(NexLogicCommandService.class);
+    registerCommands(LogicCommandService.class);
 
     // Register trigger listeners
     services().getService(TriggerListenerService.class).registerAll();
