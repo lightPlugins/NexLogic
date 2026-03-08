@@ -2,10 +2,13 @@ package io.nexstudios.nexlogic.bukkit;
 
 import io.nexstudios.framework.paper.NexPaperPlugin;
 import io.nexstudios.nexlogic.bukkit.effects.trigger.BlockPlaceTriggerType;
+import io.nexstudios.nexlogic.bukkit.effects.trigger.EntityDeathTriggerType;
 import io.nexstudios.nexlogic.bukkit.services.effects.blocks.BlockKeyService;
 import io.nexstudios.nexlogic.bukkit.services.effects.blocks.DefaultBlockKeyService;
 import io.nexstudios.nexlogic.bukkit.services.effects.blocks.PlayerPlacedBlockTrackerService;
 import io.nexstudios.nexlogic.bukkit.services.effects.bootstrap.TypeBuiltinService;
+import io.nexstudios.nexlogic.bukkit.services.effects.entities.DefaultEntityKeyService;
+import io.nexstudios.nexlogic.bukkit.services.effects.entities.EntityKeyService;
 import io.nexstudios.nexlogic.bukkit.services.effects.listeners.*;
 import io.nexstudios.nexlogic.bukkit.services.effects.logging.BukkitLoggerService;
 import io.nexstudios.nexlogic.bukkit.services.effects.platform.BukkitPlatformPluginService;
@@ -73,6 +76,8 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     services.register(LoggerService.class, BukkitLoggerService.class);
     services.register(PlatformPluginService.class, BukkitPlatformPluginService.class);
     services.register(BlockKeyService.class, DefaultBlockKeyService.class);
+    services.register(EntityKeyService.class, DefaultEntityKeyService.class);
+
     // Placeholders
     services.register(PlaceholderYamlLoaderService.class, DefaultPlaceholderYamlLoaderService.class);
     services.register(PlaceholderResolveOptionsService.class, DefaultPlaceholderResolveOptionsService.class);
@@ -111,6 +116,7 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     services.register(PlayerJoinTriggerType.class, PlayerJoinTriggerType.class);
     services.register(BlockBreakTriggerType.class, BlockBreakTriggerType.class);
     services.register(BlockPlaceTriggerType.class, BlockPlaceTriggerType.class);
+    services.register(EntityDeathTriggerType.class, EntityDeathTriggerType.class);
     // Player-placed maintenance listeners
     services.register(PistonMoveListener.class, PistonMoveListener.class);
     services.register(ExplosionCleanupListener.class, ExplosionCleanupListener.class);

@@ -4,6 +4,7 @@ import io.nexstudios.framework.paper.NexPaperPlugin;
 import io.nexstudios.framework.paper.services.ServiceListener;
 import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
 import io.nexstudios.nexlogic.bukkit.effects.trigger.BlockBreakTriggerType;
+import io.nexstudios.nexlogic.bukkit.effects.trigger.EntityDeathTriggerType;
 import io.nexstudios.nexlogic.bukkit.effects.trigger.PlayerJoinTriggerType;
 import io.nexstudios.nexlogic.bukkit.effects.trigger.BlockPlaceTriggerType;
 import io.nexstudios.serviceregistry.di.Dependencies;
@@ -19,7 +20,8 @@ import java.util.Objects;
 @Dependencies({
     PlayerJoinTriggerType.class,
     BlockBreakTriggerType.class,
-    BlockPlaceTriggerType.class
+    BlockPlaceTriggerType.class,
+    EntityDeathTriggerType.class
 })
 public final class DefaultTriggerListenerService implements TriggerListenerService {
 
@@ -34,7 +36,8 @@ public final class DefaultTriggerListenerService implements TriggerListenerServi
   private final List<Class<? extends ServiceListener>> listenerTypes = List.of(
       PlayerJoinTriggerType.class,
       BlockBreakTriggerType.class,
-      BlockPlaceTriggerType.class
+      BlockPlaceTriggerType.class,
+      EntityDeathTriggerType.class
   );
 
   public DefaultTriggerListenerService(PaperPluginService core) {

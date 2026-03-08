@@ -5,6 +5,7 @@ import io.nexstudios.nexlogic.common.effects.model.LogicContext;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -45,4 +46,12 @@ public final class DefaultBukkitContextResolverService implements BukkitContextR
     if (ctx == null) return Optional.empty();
     return ctx.get(BukkitContextKeys.ITEM_STACK);
   }
+
+  @Override
+  public Optional<Entity> entity(LogicContext ctx) {
+    if (ctx == null) return Optional.empty();
+    return ctx.get(BukkitContextKeys.ENTITY);
+  }
+
+
 }

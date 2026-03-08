@@ -6,6 +6,7 @@ import io.nexstudios.nexlogic.bukkit.effects.conditions.PlayerPlacedConditionTyp
 import io.nexstudios.nexlogic.bukkit.effects.effects.LogEffectType;
 import io.nexstudios.nexlogic.bukkit.effects.effects.MessageEffectType;
 import io.nexstudios.nexlogic.bukkit.effects.filters.BlocksFilterType;
+import io.nexstudios.nexlogic.bukkit.effects.filters.EntityFilterType;
 import io.nexstudios.nexlogic.bukkit.effects.filters.WorldsFilterType;
 import io.nexstudios.nexlogic.common.services.registry.addon.AddonRegistryService;
 import io.nexstudios.nexlogic.common.services.registry.filter.FilterTypeRegistryService;
@@ -47,5 +48,6 @@ public final class TypeBuiltinService implements Service {
   private void registerFilterTypes() {
     filters.register(service.create(BlocksFilterType.class));
     filters.register(service.create(WorldsFilterType.class));
+    filters.register(service.create(EntityFilterType.class));
   }
 }

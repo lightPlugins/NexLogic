@@ -17,10 +17,10 @@ import io.nexstudios.nexlogic.common.services.triggers.schema.ContextCapability;
 import io.nexstudios.nexlogic.common.services.triggers.schema.TriggerContextSchemaService;
 import io.nexstudios.serviceregistry.di.Dependencies;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Predicate;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * A service for managing logic execution using registered conditions, effects, and triggers.
@@ -109,11 +109,15 @@ public final class DefaultLogicEngineService implements LogicEngineService {
 
       if (!containsTrigger(entry.getSectionList("triggers"), t)) continue;
 
-      if (!safeTestAll(compileConditions(entry.getSectionList("conditions")), ctx)) continue;
+      List<ConfigSection> conditionsList = entry.getSectionList("conditions");
+      if (conditionsList == null) conditionsList = List.of();
+      if (!safeTestAll(compileConditions(conditionsList), ctx)) continue;
 
       Predicate<LogicContext> fp;
       try {
-        fp = filters.compile(t, entry.getSection("filters"));
+        ConfigSection fs = entry.getSection("filters");
+        if (fs == null) fs = MapConfigSection.EMPTY;
+        fp = filters.compile(t, fs);
       } catch (Throwable ex) {
         String effectId = entry.getString("id", "?");
         String filterId = extractFilterId(ex.getMessage()).orElse("?");
@@ -167,11 +171,15 @@ public final class DefaultLogicEngineService implements LogicEngineService {
       String id = triggerEntry.getString("id", null);
       if (id == null || !id.equalsIgnoreCase(t)) continue;
 
-      if (!safeTestAll(compileConditions(triggerEntry.getSectionList("conditions")), ctx)) continue;
+      List<ConfigSection> conditionsList = triggerEntry.getSectionList("conditions");
+      if (conditionsList == null) conditionsList = List.of();
+      if (!safeTestAll(compileConditions(conditionsList), ctx)) continue;
 
       Predicate<LogicContext> fp;
       try {
-        fp = filters.compile(t, triggerEntry.getSection("filters"));
+        ConfigSection fs = triggerEntry.getSection("filters");
+        if (fs == null) fs = MapConfigSection.EMPTY;
+        fp = filters.compile(t, fs);
       } catch (Throwable ex) {
         String filterId = extractFilterId(ex.getMessage()).orElse("?");
         loggerService.logger().severe("Filter '" + filterId + "' is not compatible with trigger '" + t + "'.");
@@ -283,9 +291,12 @@ public final class DefaultLogicEngineService implements LogicEngineService {
 
         List<ConditionInstance> entryConditions;
         try {
+          List<ConfigSection> conditionsList = binding.getSectionList("conditions");
+          if (conditionsList == null) conditionsList = List.of();
+
           entryConditions = compileConditionsValidated(
               caps,
-              binding.getSectionList("conditions"),
+              conditionsList,
               owner,
               effectId,
               triggerIdLower,
@@ -306,7 +317,10 @@ public final class DefaultLogicEngineService implements LogicEngineService {
         }
 
         try {
-          ConfigSection normalizedFilters = normalizeFilterList(binding.getSectionList("filters"));
+          List<ConfigSection> filtersList = binding.getSectionList("filters");
+          if (filtersList == null) filtersList = List.of();
+
+          ConfigSection normalizedFilters = normalizeFilterList(filtersList);
           Predicate<LogicContext> fp = filters.compile(triggerIdLower, normalizedFilters);
 
           List<ConditionInstance> allConds = new ArrayList<>(entryConditions);
@@ -355,7 +369,17 @@ public final class DefaultLogicEngineService implements LogicEngineService {
 
       List<ConditionInstance> triggerConditions;
       try {
-        triggerConditions = compileConditionsValidated(caps, tEntry.getSectionList("conditions"), owner, "trigger:" + triggerIdLower, triggerIdLower, triggerIndex);
+        List<ConfigSection> conditionsList = tEntry.getSectionList("conditions");
+        if (conditionsList == null) conditionsList = List.of();
+
+        triggerConditions = compileConditionsValidated(
+            caps,
+            conditionsList,
+            owner,
+            "trigger:" + triggerIdLower,
+            triggerIdLower,
+            triggerIndex
+        );
       } catch (Throwable ex) {
         loggerService.logger().severe("Invalid conditions for trigger '" + triggerIdLower + "'. Found in file: " + owner + ".yml");
         continue;
@@ -363,7 +387,10 @@ public final class DefaultLogicEngineService implements LogicEngineService {
 
       Predicate<LogicContext> fp;
       try {
-        fp = filters.compile(triggerIdLower, tEntry.getSection("filters"));
+        ConfigSection fs = tEntry.getSection("filters");
+        if (fs == null) fs = MapConfigSection.EMPTY;
+
+        fp = filters.compile(triggerIdLower, fs);
       } catch (Throwable ex) {
         String filterId = extractFilterId(ex.getMessage()).orElse("?");
         loggerService.logger().severe("Filter '" + filterId + "' is not compatible with trigger '" + triggerIdLower + "'. Found in file: " + owner + ".yml");
@@ -416,7 +443,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
   }
 
   private static ConfigSection normalizeFilterList(List<ConfigSection> filtersList) {
-    if (filtersList == null || filtersList.isEmpty()) return null;
+    if (filtersList == null || filtersList.isEmpty()) return MapConfigSection.EMPTY;
 
     Map<String, Object> out = new LinkedHashMap<>();
 
@@ -439,7 +466,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
       out.put(id, Map.of("args", args));
     }
 
-    return new MapConfigSection(out);
+    return out.isEmpty() ? MapConfigSection.EMPTY : new MapConfigSection(out);
   }
 
   private List<ConditionInstance> compileConditionsValidated(
