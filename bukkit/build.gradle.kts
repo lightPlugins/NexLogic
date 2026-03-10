@@ -8,7 +8,7 @@ dependencies {
     implementation(project(":common"))
 
     paperweight.paperDevBundle("1.21.11-R0.1-SNAPSHOT")
-    implementation("io.nexstudios:framework-paper:v1.0.1")
+    implementation("io.nexstudios:framework-paper:v1.0.2")
 
     implementation("org.yaml:snakeyaml:2.2")
 }

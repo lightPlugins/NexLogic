@@ -7,7 +7,6 @@ import io.nexstudios.nexlogic.bukkit.effects.trigger.BlockBreakTriggerType;
 import io.nexstudios.nexlogic.bukkit.effects.trigger.EntityDeathTriggerType;
 import io.nexstudios.nexlogic.bukkit.effects.trigger.PlayerJoinTriggerType;
 import io.nexstudios.nexlogic.bukkit.effects.trigger.BlockPlaceTriggerType;
-import io.nexstudios.serviceregistry.di.Dependencies;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
 import org.bukkit.Bukkit;
 
@@ -17,12 +16,6 @@ import java.util.Objects;
 /**
  * Registers Bukkit event listeners for built-in trigger types.
  */
-@Dependencies({
-    PlayerJoinTriggerType.class,
-    BlockBreakTriggerType.class,
-    BlockPlaceTriggerType.class,
-    EntityDeathTriggerType.class
-})
 public final class DefaultTriggerListenerService implements TriggerListenerService {
 
   private final NexPaperPlugin plugin;
@@ -49,7 +42,7 @@ public final class DefaultTriggerListenerService implements TriggerListenerServi
   @Override
   public void registerAll() {
     for (Class<? extends ServiceListener> type : listenerTypes) {
-      ServiceListener listener = services.getService(type);
+      ServiceListener listener = services.create(type);
       Bukkit.getPluginManager().registerEvents(listener, plugin);
     }
   }
