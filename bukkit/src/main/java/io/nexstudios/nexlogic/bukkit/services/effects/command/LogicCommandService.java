@@ -4,6 +4,9 @@ import io.nexstudios.framework.paper.services.commands.annotations.Command;
 import io.nexstudios.framework.paper.services.commands.annotations.CommandRoot;
 import io.nexstudios.framework.paper.services.commands.source.NexPaperCommandSource;
 import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
+import io.nexstudios.menuservice.common.api.ViewerRef;
+import io.nexstudios.nexlogic.bukkit.ExampleMainMenu;
+import io.nexstudios.nexlogic.bukkit.ExamplePagedMenu;
 import io.nexstudios.nexlogic.bukkit.services.effects.reload.ReloadService;
 import io.nexstudios.serviceregistry.di.Dependencies;
 import io.nexstudios.serviceregistry.di.Service;
@@ -31,6 +34,20 @@ public final class LogicCommandService implements Service {
     source.sender().sendMessage("Reloading NexLogic...");
     reload.reloadAsync();
     source.sender().sendMessage("Reload scheduled.");
+    return 1;
+  }
+
+  @Command(value = "open", permission = "default.admin")
+  public int open(NexPaperCommandSource source) {
+    source.sender().sendMessage("Opening NexLogic GUI...");
+    ExampleMainMenu.open(services, ViewerRef.of(source.executor().getUniqueId(), source.executor().getName()));
+    return 1;
+  }
+
+  @Command(value = "test", permission = "default.admin")
+  public int opentest(NexPaperCommandSource source) {
+    source.sender().sendMessage("Opening NexLogic GUI...");
+    ExamplePagedMenu.open(services, ViewerRef.of(source.executor().getUniqueId(), source.executor().getName()));
     return 1;
   }
 }

@@ -9,6 +9,8 @@ dependencies {
 
     paperweight.paperDevBundle("1.21.11-R0.1-SNAPSHOT")
     implementation("io.nexstudios:framework-paper:v1.0.2")
+    implementation("io.nexstudios.menuservice:bukkit:v1.0.1")
+
 
     implementation("org.yaml:snakeyaml:2.2")
 }
