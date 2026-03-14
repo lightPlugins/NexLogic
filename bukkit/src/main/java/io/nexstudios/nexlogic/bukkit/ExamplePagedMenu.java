@@ -1,5 +1,6 @@
 package io.nexstudios.nexlogic.bukkit;
 
+import io.nexstudios.itemservice.bukkit.service.item.ItemService;
 import io.nexstudios.menuservice.common.api.MenuDefinition;
 import io.nexstudios.menuservice.common.api.MenuKey;
 import io.nexstudios.menuservice.common.api.MenuService;
@@ -15,13 +16,26 @@ import io.nexstudios.menuservice.common.api.page.PageNavigation;
 import io.nexstudios.menuservice.common.api.page.PageSource;
 import io.nexstudios.menuservice.common.api.page.PagedAreaDefinition;
 import io.nexstudios.menuservice.common.api.registry.DuplicateStrategy;
+import io.nexstudios.serviceregistry.di.Dependencies;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.concurrent.atomic.AtomicLong;
 
+@Dependencies({
+    ItemService.class,
+    MenuService.class
+})
 public final class ExamplePagedMenu {
 
   public static final MenuKey KEY = MenuKey.of("nexlogic", "paged");
@@ -34,8 +48,9 @@ public final class ExamplePagedMenu {
     Objects.requireNonNull(services, "services");
 
     MenuService menuService = services.getService(MenuService.class);
+    ItemService items = services.getService(ItemService.class);
 
-    PagedAreaDefinition<String> pagedArea = getStringPagedAreaDefinition();
+    PagedAreaDefinition<String> pagedArea = getStringPagedAreaDefinition(items);
 
     MenuDefinition def = MenuDefinitionBuilder.create()
         .key(KEY)
@@ -46,15 +61,17 @@ public final class ExamplePagedMenu {
         .populator(ctx -> {
           long tick = RENDER_TICK.incrementAndGet();
 
-          ctx.slot(4).setItem(
-              MenuItem.builder("minecraft:clock")
-                  .displayName("§bRender-Tick")
-                  .lore(List.of(
-                      "§7Tick: §e" + tick,
-                      "§7Wenn das hochzählt: Refresh + Lore-Update OK"
-                  ))
+          // Async-safe: ItemStack/MenuItem erst im Supplier (Main-Thread) erzeugen
+          ctx.slot(4).setPlannedItem(() -> MenuItem.of(
+              items.builder(Material.CLOCK)
+                  .amount(1)
+                  .name(Component.text("Render-Tick", NamedTextColor.AQUA))
+                  .lore(l -> l
+                      .line("&7Tick: &e" + tick)
+                      .line("&7Wenn das hochzählt: Refresh + Lore-Update OK")
+                  )
                   .build()
-          );
+          ));
         })
         .addPagedArea(pagedArea)
         .build();
@@ -62,7 +79,7 @@ public final class ExamplePagedMenu {
     menuService.registry().register(def, DuplicateStrategy.REPLACE);
   }
 
-  private static @NotNull PagedAreaDefinition<String> getStringPagedAreaDefinition() {
+  private static @NotNull PagedAreaDefinition<String> getStringPagedAreaDefinition(ItemService items) {
     PageSource<String> source = (MenuKey menuKey, ViewerRef viewer) -> {
       List<String> out = new ArrayList<>(100);
       for (int i = 1; i <= 100; i++) {
@@ -71,34 +88,45 @@ public final class ExamplePagedMenu {
       return List.copyOf(out);
     };
 
-    PageItemRenderer<String> renderer = (element, index) -> {
+    // NEU: PageItemRenderer liefert MenuItemSupplier (deferred)
+    PageItemRenderer<String> renderer = (element, index) -> () -> {
       long tick = RENDER_TICK.get(); // wird im populator() pro Render erhöht
 
-      return MenuItem.builder("minecraft:paper")
-          .displayName("§f" + element)
-          .lore(List.of(
-              "§7Index: §f" + index,
-              "§7Tick: §e" + tick,
-              "§8(soll jede Sekunde hochzählen)"
-          ))
+      ItemStack stack = items.builder(Material.PAPER)
+          .amount(1)
+          .name(Component.text(element, NamedTextColor.WHITE))
+          .lore(l -> l
+              .line("&7Index: &f" + index)
+              .line("&7Tick: &e" + tick)
+              .line("&8(soll jede Sekunde hochzählen)")
+          )
           .build();
+
+      return MenuItem.of(stack);
     };
 
-    return getStringPagedAreaDefinition(source, renderer);
+    return getStringPagedAreaDefinition(items, source, renderer);
   }
 
-  private static @NotNull PagedAreaDefinition<String> getStringPagedAreaDefinition(PageSource<String> source, PageItemRenderer<String> renderer) {
+  private static @NotNull PagedAreaDefinition<String> getStringPagedAreaDefinition(
+      ItemService items,
+      PageSource<String> source,
+      PageItemRenderer<String> renderer
+  ) {
     PageClickHandler<String> clickHandler = (element, index, ctx) -> {
+      // Click handler läuft auf Main-Thread -> hier darfst du Items direkt bauen
       ctx.cancel();
-      ctx.setCurrentItem(
-          MenuItem.builder("minecraft:lime_dye")
-              .displayName("§aAusgewählt: §f" + element)
-              .lore(List.of(
-                  "§7Globaler Index: §f" + index,
-                  "§7Tick: §e" + RENDER_TICK.get()
-              ))
-              .build()
-      );
+
+      ItemStack stack = items.builder(Material.LIME_DYE)
+          .amount(1)
+          .name(Component.text("Ausgewählt: " + element, NamedTextColor.GREEN))
+          .lore(l -> l
+              .line("&7Globaler Index: &f" + index)
+              .line("&7Tick: &e" + RENDER_TICK.get())
+          )
+          .build();
+
+      ctx.setCurrentItem(MenuItem.of(stack));
     };
 
     PageBounds bounds = new PageBounds(1, 1, 7, 4, PageAlignment.LEFT);

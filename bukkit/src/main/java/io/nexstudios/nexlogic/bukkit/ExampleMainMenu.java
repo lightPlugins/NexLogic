@@ -1,5 +1,6 @@
 package io.nexstudios.nexlogic.bukkit;
 
+import io.nexstudios.itemservice.bukkit.service.item.ItemService;
 import io.nexstudios.menuservice.common.api.MenuDefinition;
 import io.nexstudios.menuservice.common.api.MenuKey;
 import io.nexstudios.menuservice.common.api.MenuService;
@@ -8,18 +9,20 @@ import io.nexstudios.menuservice.common.api.builder.MenuDefinitionBuilder;
 import io.nexstudios.menuservice.common.api.interaction.InteractionPolicies;
 import io.nexstudios.menuservice.common.api.item.MenuItem;
 import io.nexstudios.menuservice.common.api.registry.DuplicateStrategy;
+import io.nexstudios.serviceregistry.di.Dependencies;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
-/**
- * Beispiel-Menü:
- * - registriert eine MenuDefinition im MenuService-Registry
- * - kann per open(...) geöffnet werden
- *
- * Hinweis: Populator läuft bei dir async (thread-safe!), also keine Bukkit-API hier benutzen.
- */
+@Dependencies({
+    ItemService.class,
+    MenuService.class
+})
 public final class ExampleMainMenu {
 
   public static final MenuKey KEY = MenuKey.of("nexlogic", "main");
@@ -29,8 +32,8 @@ public final class ExampleMainMenu {
   public static void register(@NotNull ServiceAccessor services) {
     Objects.requireNonNull(services, "services");
 
-    // Je nach ServiceRegistry-API kann es statt require(...) auch get(...) / resolve(...) heißen.
     MenuService menuService = services.getService(MenuService.class);
+    ItemService items = services.getService(ItemService.class);
 
     MenuDefinition def = MenuDefinitionBuilder.create()
         .key(KEY)
@@ -39,38 +42,48 @@ public final class ExampleMainMenu {
         .interactionPolicy(InteractionPolicies.locked())
         .populator(ctx -> {
           // Slot 13 (Mitte bei 3 Reihen)
-          ctx.slot(13).setItem(
-              MenuItem.builder("minecraft:compass")
-                  .displayName("Navigator")
-                  .addLoreLine("Klick mich")
-                  .build()
-          );
+          ctx.slot(13).setPlannedItem(() -> {
+            ItemStack stack = items.builder(Material.COMPASS)
+                .amount(1)
+                .name(Component.text("Navigator", NamedTextColor.WHITE))
+                .lore(l -> l
+                    .line("&7Klick mich")
+                )
+                .build();
 
-          // Click-Handler: setzt das Item direkt im Slot um (kein Bukkit-Code!)
+            return MenuItem.of(stack);
+          });
+
+          // Click-Handler läuft auf dem Main-Thread -> ItemService/ItemStack ok
           ctx.slot(13).onClick(click -> {
             click.cancel();
 
-            // kleines visuelles Feedback: Item im Slot umschalten
             if (click.action().name().contains("RIGHT")) {
-              click.setCurrentItem(
-                  MenuItem.builder("minecraft:lime_dye")
-                      .displayName("Rechtsklick erkannt")
-                      .addLoreLine("Slot: " + click.slot())
-                      .build()
-              );
-            } else {
-              click.setCurrentItem(
-                  MenuItem.builder("minecraft:paper")
-                      .displayName("Linksklick erkannt")
-                      .addLoreLine("Viewer: " + click.viewer().name())
-                      .build()
-              );
+              ItemStack stack = items.builder(Material.LIME_DYE)
+                  .amount(1)
+                  .name(Component.text("Rechtsklick erkannt", NamedTextColor.GREEN))
+                  .lore(l -> l
+                      .line("&7Slot: &f" + click.slot())
+                  )
+                  .build();
+
+              click.setCurrentItem(MenuItem.of(stack));
+              return;
             }
+
+            ItemStack stack = items.builder(Material.PAPER)
+                .amount(1)
+                .name(Component.text("Linksklick erkannt", NamedTextColor.WHITE))
+                .lore(l -> l
+                    .line("&7Viewer: &f" + click.viewer().name())
+                )
+                .build();
+
+            click.setCurrentItem(MenuItem.of(stack));
           });
         })
         .build();
 
-    // Registrieren (FAIL wirft Exception bei doppeltem Key)
     menuService.registry().register(def, DuplicateStrategy.REPLACE);
   }
 

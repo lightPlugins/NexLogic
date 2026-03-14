@@ -6,6 +6,7 @@ plugins {
 
 dependencies {
     implementation(project(":common"))
+    implementation("io.nexstudios.itemservice:bukkit:v1.0.0")
 
     paperweight.paperDevBundle("1.21.11-R0.1-SNAPSHOT")
     implementation("io.nexstudios:framework-paper:v1.0.2")

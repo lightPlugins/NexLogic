@@ -1,6 +1,7 @@
 package io.nexstudios.nexlogic.bukkit;
 
 import io.nexstudios.framework.paper.NexPaperPlugin;
+import io.nexstudios.itemservice.bukkit.ItemServiceModule;
 import io.nexstudios.menuservice.bukkit.service.menu.BukkitMenuServiceModule;
 import io.nexstudios.nexlogic.bukkit.modules.BukkitRuntimeModule;
 import io.nexstudios.nexlogic.bukkit.modules.CoreModule;
@@ -23,9 +24,11 @@ public final class NexLogicPlugin extends NexPaperPlugin {
   protected void configureServices(@NotNull ServiceAccessor services) {
 
     // install menu api
+    services.install(new ItemServiceModule(this));
     services.install(new BukkitMenuServiceModule(this));
     ExampleMainMenu.register(services);
     ExamplePagedMenu.register(services);
+    ExampleControlsPaged.register(services);
 
 
     List<ServiceModule> modules = List.of(

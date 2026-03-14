@@ -5,6 +5,7 @@ import io.nexstudios.framework.paper.services.commands.annotations.CommandRoot;
 import io.nexstudios.framework.paper.services.commands.source.NexPaperCommandSource;
 import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
 import io.nexstudios.menuservice.common.api.ViewerRef;
+import io.nexstudios.nexlogic.bukkit.ExampleControlsPaged;
 import io.nexstudios.nexlogic.bukkit.ExampleMainMenu;
 import io.nexstudios.nexlogic.bukkit.ExamplePagedMenu;
 import io.nexstudios.nexlogic.bukkit.services.effects.reload.ReloadService;
@@ -48,6 +49,13 @@ public final class LogicCommandService implements Service {
   public int opentest(NexPaperCommandSource source) {
     source.sender().sendMessage("Opening NexLogic GUI...");
     ExamplePagedMenu.open(services, ViewerRef.of(source.executor().getUniqueId(), source.executor().getName()));
+    return 1;
+  }
+
+  @Command(value = "sort", permission = "default.admin")
+  public int openSort(NexPaperCommandSource source) {
+    source.sender().sendMessage("Opening NexLogic GUI...");
+    ExampleControlsPaged.open(services, ViewerRef.of(source.executor().getUniqueId(), source.executor().getName()));
     return 1;
   }
 }
