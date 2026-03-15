@@ -1,8 +1,12 @@
 package io.nexstudios.nexlogic.bukkit;
 
+import io.nexstudios.databaseservice.bukkit.DatabaseServiceModul;
+import io.nexstudios.databaseservice.bukkit.service.api.DatabaseAsyncService;
+import io.nexstudios.databaseservice.bukkit.service.api.DatabaseService;
+import io.nexstudios.databaseservice.bukkit.service.api.HibernateEntityRegistryService;
 import io.nexstudios.framework.paper.NexPaperPlugin;
 import io.nexstudios.itemservice.bukkit.ItemServiceModule;
-import io.nexstudios.menuservice.bukkit.service.menu.BukkitMenuServiceModule;
+import io.nexstudios.menuservice.bukkit.service.menu.MenuServiceModule;
 import io.nexstudios.nexlogic.bukkit.modules.BukkitRuntimeModule;
 import io.nexstudios.nexlogic.bukkit.modules.CoreModule;
 import io.nexstudios.nexlogic.bukkit.modules.EffectsModule;
@@ -23,14 +27,20 @@ public final class NexLogicPlugin extends NexPaperPlugin {
   @Override
   protected void configureServices(@NotNull ServiceAccessor services) {
 
-    // install menu api
+    // NexStudios Addon Services //
+    // install DatabaseService
+    services.install(new DatabaseServiceModul(this));
+    initDatabase(services);
+    // install ItemService
     services.install(new ItemServiceModule(this));
-    services.install(new BukkitMenuServiceModule(this));
+    // install MenuService
+    services.install(new MenuServiceModule(this));
+    // register Test Menus
     ExampleMainMenu.register(services);
     ExamplePagedMenu.register(services);
     ExampleControlsPaged.register(services);
 
-
+    // install internal ServiceModules
     List<ServiceModule> modules = List.of(
         new CoreModule(),
         new PlaceholderModule(),
@@ -69,5 +79,17 @@ public final class NexLogicPlugin extends NexPaperPlugin {
   protected void stop() {
     services().getService(AsyncExecutorService.class).shutdown();
     getLogger().info("NexLogic is stopping...");
+  }
+
+  private void initDatabase(ServiceAccessor services) {
+    registerEntities(services.getService(HibernateEntityRegistryService.class));
+    DatabaseService db = services.getService(DatabaseService.class);
+    db.start();
+    DatabaseAsyncService dbAsync = services.getService(DatabaseAsyncService.class);
+    dbAsync.start();
+  }
+
+  private void registerEntities(HibernateEntityRegistryService reg) {
+
   }
 }

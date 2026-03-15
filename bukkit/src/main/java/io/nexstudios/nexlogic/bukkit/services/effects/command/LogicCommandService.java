@@ -38,21 +38,21 @@ public final class LogicCommandService implements Service {
     return 1;
   }
 
-  @Command(value = "open", permission = "default.admin")
+  @Command(value = "gui normal", permission = "default.admin")
   public int open(NexPaperCommandSource source) {
     source.sender().sendMessage("Opening NexLogic GUI...");
     ExampleMainMenu.open(services, ViewerRef.of(source.executor().getUniqueId(), source.executor().getName()));
     return 1;
   }
 
-  @Command(value = "test", permission = "default.admin")
+  @Command(value = "gui paged", permission = "default.admin")
   public int opentest(NexPaperCommandSource source) {
     source.sender().sendMessage("Opening NexLogic GUI...");
     ExamplePagedMenu.open(services, ViewerRef.of(source.executor().getUniqueId(), source.executor().getName()));
     return 1;
   }
 
-  @Command(value = "sort", permission = "default.admin")
+  @Command(value = "gui controls", permission = "default.admin")
   public int openSort(NexPaperCommandSource source) {
     source.sender().sendMessage("Opening NexLogic GUI...");
     ExampleControlsPaged.open(services, ViewerRef.of(source.executor().getUniqueId(), source.executor().getName()));

@@ -6,6 +6,7 @@ import io.nexstudios.nexlogic.bukkit.services.effects.executor.MainThreadExecuto
 import io.nexstudios.nexlogic.common.effects.config.ConfigSection;
 import io.nexstudios.nexlogic.common.effects.runtime.EffectInstance;
 import io.nexstudios.nexlogic.common.effects.types.EffectTypeService;
+import io.nexstudios.nexlogic.common.services.logging.LoggerService;
 import io.nexstudios.serviceregistry.di.Dependencies;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -14,14 +15,17 @@ import org.bukkit.inventory.ItemStack;
 import java.util.Locale;
 
 @Dependencies({
-    MainThreadExecutorService.class
+    MainThreadExecutorService.class,
+    LoggerService.class
 })
 public final class GiveItemEffectType implements EffectTypeService {
 
   private final MainThreadExecutorService mainThread;
+  private final LoggerService loggerService;
 
   public GiveItemEffectType(PaperPluginService core) {
     this.mainThread = core.plugin().services().getService(MainThreadExecutorService.class);
+    this.loggerService = core.plugin().services().getService(LoggerService.class);
   }
 
   @Override
@@ -32,7 +36,14 @@ public final class GiveItemEffectType implements EffectTypeService {
   @Override
   public EffectInstance create(ConfigSection args) {
     final String materialRaw = args == null ? "" : nullToEmpty(args.getString("material", ""));
-    final int amount = args == null ? 1 : args.getInt("amount", 1);
+    int amount = args == null ? 1 : args.getInt("amount", 1);
+
+    if(amount <= 0 || amount > 99) {
+      loggerService.logger().severe("Invalid amount provided: " + amount + " in effect: " + id());
+      loggerService.logger().severe("Amount must be between 1 and 99");
+      loggerService.logger().severe("Falling back to default amount of 1");
+      amount = 1;
+    }
 
     final Material material = parseMaterial(materialRaw);
 
@@ -43,6 +54,7 @@ public final class GiveItemEffectType implements EffectTypeService {
       };
     }
 
+    int finalAmount = amount;
     return ctx -> {
       if (ctx == null) return;
 
@@ -53,7 +65,7 @@ public final class GiveItemEffectType implements EffectTypeService {
         if (!player.isOnline()) return;
 
         // raw: rely on Bukkit to stack / place into free slots, no overflow handling here
-        player.getInventory().addItem(new ItemStack(material, amount));
+        player.getInventory().addItem(new ItemStack(material, finalAmount));
       };
 
       if (mainThread.isMainThread()) give.run();

@@ -1,0 +1,54 @@
+name: '<red>Farming'
+
+max-level: 100
+
+# Level 0  -> 100 XP
+# Level 1  -> 102 XP
+# Level 2  -> 110 XP
+# Level 3  -> 125 XP
+# Level 4  -> 153 XP
+# Level 5  -> 191 XP
+# Level 10 -> 691 XP
+# Level 15 -> 2077 XP
+# Level 20 -> 4439 XP
+# Level 25 -> 8024 XP
+# Level 30 -> 14563 XP
+# Level 40 -> 34126 XP
+# Level 50 -> 66275 XP
+# Level 60 -> 114288 XP
+# Level 70 -> 181257 XP
+# Level 80 -> 269438 XP
+# Level 90 -> 381904 XP
+# Level 99 -> 504808 XP
+# Level 100 -> 521000 XP
+xp-formular: 'floor(100 + 0.35 * pow(({level} + 1), 3.1))'
+
+level-up-trigger:
+  - level: '>=1'
+    effects:
+      - id: message
+        args:
+          message: '<gray>You have reached level <dark_gray>{old-level} <gray>-> <green>{level}!'
+  - level: 'every-5'
+    effects:
+      - id: message
+        args:
+          message: 'Congrats: You have reached level {level}!'
+  - level: '=100'
+    effects:
+      - id: message
+        args:
+          message: 'You have reached max level! (100)'
+
+
+xp-gain-trigger:
+  - id: block-break
+    effects:
+      - id: give-level-xp
+        name: 'farming'
+        amount: '{level} * 1.12'
+    filters:
+      - id: blocks
+        blocks:
+          - 'minecraft:stone'
+          - 'minecraft:dirt'
