@@ -89,6 +89,17 @@ public final class LogicContext {
   public Set<ContextCapability> capabilities() {
     return Set.copyOf(capabilities);
   }
+
+  /**
+   * Allows platform/external callers to declare which capabilities this context provides,
+   * even when the actual runtime objects are stored in {@link #extras()} via {@link #put(ContextKey, Object)}.
+   */
+  public void declareCapabilities(ContextCapability... caps) {
+    if (caps == null) return;
+    for (ContextCapability c : caps) {
+      if (c != null) capabilities.add(c);
+    }
+  }
   public Optional<PlayerContext> player() {
     return Optional.ofNullable(player);
   }

@@ -1,5 +1,7 @@
 package io.nexstudios.nexlogic.bukkit.modules;
 
+import io.nexstudios.nexlogic.common.services.conditions.ConditionEvaluatorService;
+import io.nexstudios.nexlogic.common.services.conditions.DefaultConditionEvaluatorService;
 import io.nexstudios.nexlogic.common.services.engine.DefaultLogicEngineService;
 import io.nexstudios.nexlogic.common.services.engine.LogicEngineService;
 import io.nexstudios.nexlogic.common.services.filters.DefaultFilterService;
@@ -56,5 +58,6 @@ public final class EffectsModule implements ServiceModule {
 
     // Engine
     services.register(LogicEngineService.class, DefaultLogicEngineService.class);
+    services.register(ConditionEvaluatorService.class, DefaultConditionEvaluatorService.class);
   }
 }

@@ -1,6 +1,7 @@
 package io.nexstudios.nexlogic.bukkit.services.effects.bootstrap;
 
 import io.nexstudios.nexlogic.bukkit.effects.conditions.ChanceConditionType;
+import io.nexstudios.nexlogic.bukkit.effects.conditions.HasAgeConditionType;
 import io.nexstudios.nexlogic.bukkit.effects.conditions.PermissionConditionType;
 import io.nexstudios.nexlogic.bukkit.effects.conditions.PlayerPlacedConditionType;
 import io.nexstudios.nexlogic.bukkit.effects.effects.GiveItemEffectType;
@@ -41,6 +42,7 @@ public final class TypeBuiltinService implements Service {
       r.registerConditionType(ChanceConditionType.class);
       r.registerConditionType(PermissionConditionType.class);
       r.registerConditionType(PlayerPlacedConditionType.class);
+      r.registerConditionType(HasAgeConditionType.class);
       r.registerEffectType(MessageEffectType.class);
       r.registerEffectType(LogEffectType.class);
       r.registerEffectType(GiveItemEffectType.class);
