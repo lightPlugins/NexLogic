@@ -1,8 +1,8 @@
 package io.nexstudios.nexlogic.bukkit.services.placeholder.runtime.options.cache;
 
-import io.nexstudios.framework.config.ConfigurationSection;
-import io.nexstudios.framework.config.FileConfiguration;
-import io.nexstudios.framework.config.service.singlereader.FileReaderService;
+import io.nexstudios.configservice.config.ConfigurationSection;
+import io.nexstudios.configservice.config.FileConfiguration;
+import io.nexstudios.configservice.service.singlereader.FileReaderService;
 import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
 import io.nexstudios.nexlogic.common.services.placeholder.cache.PlaceholderCacheOptionsService;
 import io.nexstudios.serviceregistry.di.Dependencies;

@@ -1,8 +1,8 @@
 package io.nexstudios.nexlogic.bukkit.services.placeholder.loader;
 
-import io.nexstudios.framework.config.ConfigurationSection;
-import io.nexstudios.framework.config.FileConfiguration;
-import io.nexstudios.framework.config.service.multireader.MultiFileReaderService;
+import io.nexstudios.configservice.config.ConfigurationSection;
+import io.nexstudios.configservice.config.FileConfiguration;
+import io.nexstudios.configservice.service.multireader.MultiFileReaderService;
 import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
 import io.nexstudios.nexlogic.common.placeholder.loader.PlaceholderFileModel;
 import io.nexstudios.nexlogic.common.services.placeholder.loader.PlaceholderYamlLoaderService;

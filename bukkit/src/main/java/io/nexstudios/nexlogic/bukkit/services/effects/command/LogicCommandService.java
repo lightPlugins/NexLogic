@@ -1,8 +1,8 @@
 package io.nexstudios.nexlogic.bukkit.services.effects.command;
 
-import io.nexstudios.framework.paper.services.commands.annotations.Command;
-import io.nexstudios.framework.paper.services.commands.annotations.CommandRoot;
-import io.nexstudios.framework.paper.services.commands.source.NexPaperCommandSource;
+import io.nexstudios.commandservice.service.commands.annotations.Command;
+import io.nexstudios.commandservice.service.commands.annotations.CommandRoot;
+import io.nexstudios.commandservice.service.commands.source.NexPaperCommandSource;
 import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
 import io.nexstudios.menuservice.common.api.ViewerRef;
 import io.nexstudios.nexlogic.bukkit.ExampleControlsPaged;

@@ -1,11 +1,15 @@
 package io.nexstudios.nexlogic.bukkit;
 
+import io.nexstudios.commandservice.CommandServiceModule;
+import io.nexstudios.commandservice.service.commands.CommandService;
+import io.nexstudios.configservice.ConfigServiceModule;
 import io.nexstudios.databaseservice.bukkit.DatabaseServiceModul;
 import io.nexstudios.databaseservice.bukkit.service.api.DatabaseAsyncService;
 import io.nexstudios.databaseservice.bukkit.service.api.DatabaseService;
 import io.nexstudios.databaseservice.bukkit.service.api.HibernateEntityRegistryService;
 import io.nexstudios.framework.paper.NexPaperPlugin;
 import io.nexstudios.itemservice.bukkit.ItemServiceModule;
+import io.nexstudios.languageservice.LanguageServiceModule;
 import io.nexstudios.menuservice.bukkit.service.menu.MenuServiceModule;
 import io.nexstudios.nexlogic.bukkit.modules.BukkitRuntimeModule;
 import io.nexstudios.nexlogic.bukkit.modules.CoreModule;
@@ -27,7 +31,11 @@ public final class NexLogicPlugin extends NexPaperPlugin {
   @Override
   protected void configureServices(@NotNull ServiceAccessor services) {
 
-    // NexStudios Addon Services //
+    // NexStudios Addon Service Modules //
+    // install ConfigService
+    services.install(new ConfigServiceModule(getDataPath(), getClassLoader()));
+    // install LanguageService (require ConfigService loaded)
+    services.install(new LanguageServiceModule(this));
     // install DatabaseService
     services.install(new DatabaseServiceModul(this));
     initDatabase(services);
@@ -35,10 +43,8 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     services.install(new ItemServiceModule(this));
     // install MenuService
     services.install(new MenuServiceModule(this));
-    // register Test Menus
-    ExampleMainMenu.register(services);
-    ExamplePagedMenu.register(services);
-    ExampleControlsPaged.register(services);
+    // install Command Service
+    services.install(new CommandServiceModule(this));
 
     // install internal ServiceModules
     List<ServiceModule> modules = List.of(
@@ -47,8 +53,8 @@ public final class NexLogicPlugin extends NexPaperPlugin {
         new EffectsModule(),
         new BukkitRuntimeModule()
     );
-
     services.installAll(modules);
+
   }
 
   @Override
@@ -60,8 +66,17 @@ public final class NexLogicPlugin extends NexPaperPlugin {
   protected void start() {
     getLogger().info("NexLogic is starting...");
 
-    // Register commands via NexFramework command system
-    registerCommands(LogicCommandService.class);
+    // register Commands
+    services().getService(CommandService.class).registerAll(
+        List.of(
+            LogicCommandService.class
+        )
+    );
+
+    // register example Menus
+    ExampleMainMenu.register(services());
+    ExamplePagedMenu.register(services());
+    ExampleControlsPaged.register(services());
 
     // Register trigger listeners
     services().getService(TriggerListenerService.class).registerAll();

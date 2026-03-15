@@ -12,6 +12,9 @@ dependencies {
     implementation("io.nexstudios:framework-paper:v1.0.2")
     implementation("io.nexstudios.menuservice:bukkit:v1.0.1")
     implementation("io.nexstudios.databaseservice:bukkit:v1.0.0")
+    implementation("io.nexstudios.configservice:platform:v1.0.0")
+    implementation("io.nexstudios.languageservice:bukkit:v1.0.0")
+    implementation("io.nexstudios.commandservice:bukkit:v1.0.0")
 
 
     implementation("org.yaml:snakeyaml:2.2")

@@ -1,6 +1,7 @@
 package io.nexstudios.nexlogic.bukkit.services.effects.reload;
 
 import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
+import io.nexstudios.languageservice.service.language.LanguageService;
 import io.nexstudios.nexlogic.bukkit.services.effects.executor.async.AsyncExecutorService;
 import io.nexstudios.nexlogic.bukkit.services.effects.loader.YamlLoaderService;
 import io.nexstudios.nexlogic.bukkit.services.placeholder.PlaceholderReloadService;
@@ -22,7 +23,8 @@ import java.util.logging.Logger;
     LogicEngineService.class,
     PlaceholderReloadService.class,
     PlaceholderResolveOptionsService.class,
-    PlaceholderCacheOptionsService.class
+    PlaceholderCacheOptionsService.class,
+    LanguageService.class
 })
 public final class DefaultReloadService implements ReloadService {
 
@@ -33,6 +35,7 @@ public final class DefaultReloadService implements ReloadService {
   private final PlaceholderReloadService placeholders;
   private final PlaceholderResolveOptionsService placeholderOptions;
   private final PlaceholderCacheOptionsService placeholderCacheOptions;
+  private final LanguageService languageService;
   private final Logger logger;
 
   private final Set<String> lastOwners = ConcurrentHashMap.newKeySet();
@@ -45,6 +48,7 @@ public final class DefaultReloadService implements ReloadService {
     this.placeholders = services.getService(PlaceholderReloadService.class);
     this.placeholderOptions = services.getService(PlaceholderResolveOptionsService.class);
     this.placeholderCacheOptions = services.getService(PlaceholderCacheOptionsService.class);
+    this.languageService = services.getService(LanguageService.class);
     this.logger = core.plugin().getLogger();
   }
 
@@ -54,6 +58,8 @@ public final class DefaultReloadService implements ReloadService {
       logger.info("Reload started...");
 
       try {
+        // reload language first
+        languageService.reload();
         // Reload resolve limits first
         placeholderOptions.reload();
         placeholderCacheOptions.reload();
@@ -94,5 +100,10 @@ public final class DefaultReloadService implements ReloadService {
         ex.printStackTrace();
       }
     });
+  }
+
+  @Override
+  public void reloadSync() {
+    reloadAsync();
   }
 }
