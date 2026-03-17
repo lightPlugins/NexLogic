@@ -3,7 +3,6 @@ package io.nexstudios.nexlogic.bukkit.services.effects.command;
 import io.nexstudios.commandservice.service.commands.annotations.Command;
 import io.nexstudios.commandservice.service.commands.annotations.CommandRoot;
 import io.nexstudios.commandservice.service.commands.source.NexPaperCommandSource;
-import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
 import io.nexstudios.menuservice.common.api.ViewerRef;
 import io.nexstudios.nexlogic.bukkit.ExampleControlsPaged;
 import io.nexstudios.nexlogic.bukkit.ExampleMainMenu;
@@ -25,9 +24,9 @@ public final class LogicCommandService implements Service {
   private final ServiceAccessor services;
   private final ReloadService reload;
 
-  public LogicCommandService(PaperPluginService core) {
-    this.services = core.plugin().services();
-    this.reload = services.getService(ReloadService.class);
+  public LogicCommandService(ServiceAccessor accessor) {
+    this.reload = accessor.getService(ReloadService.class);
+    this.services = accessor;
   }
 
   @Command(value = "reload", permission = "nexlogic.admin")

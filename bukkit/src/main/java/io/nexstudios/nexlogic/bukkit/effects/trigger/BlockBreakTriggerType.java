@@ -27,7 +27,7 @@ public class BlockBreakTriggerType implements ServiceListener {
     this.tracker = accessor.getService(PlayerPlacedBlockTrackerService.class);
   }
 
-  @EventHandler
+  @EventHandler(ignoreCancelled = true)
   public void onJoin(BlockBreakEvent event) {
 
     Player player = event.getPlayer();
