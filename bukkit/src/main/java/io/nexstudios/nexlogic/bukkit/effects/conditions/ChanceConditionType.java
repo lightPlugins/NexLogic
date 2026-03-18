@@ -1,25 +1,25 @@
 package io.nexstudios.nexlogic.bukkit.effects.conditions;
 
-import io.nexstudios.framework.paper.services.plugin.PaperPluginService;
-import io.nexstudios.nexlogic.bukkit.services.placeholder.runtime.PlaceholderRuntimeService;
+import io.nexstudios.nexlogic.bukkit.services.expression.ExpressionService;
 import io.nexstudios.nexlogic.common.effects.config.ConfigSection;
 import io.nexstudios.nexlogic.common.effects.runtime.ConditionInstance;
 import io.nexstudios.nexlogic.common.effects.types.ConditionTypeService;
 import io.nexstudios.nexlogic.common.services.triggers.schema.ContextCapability;
 import io.nexstudios.serviceregistry.di.Dependencies;
+import io.nexstudios.serviceregistry.di.ServiceAccessor;
 
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Dependencies({
-    PlaceholderRuntimeService.class
+    ExpressionService.class
 })
 public final class ChanceConditionType implements ConditionTypeService {
 
-  private final PlaceholderRuntimeService placeholders;
+  private final ExpressionService expressions;
 
-  public ChanceConditionType(PaperPluginService core) {
-    this.placeholders = core.plugin().services().getService(PlaceholderRuntimeService.class);
+  public ChanceConditionType(ServiceAccessor accessor) {
+    this.expressions = accessor.getService(ExpressionService.class);
   }
 
   @Override
@@ -34,13 +34,11 @@ public final class ChanceConditionType implements ConditionTypeService {
 
   @Override
   public ConditionInstance create(ConfigSection args) {
+    final String chanceExpr = args == null ? "0" : args.getString("chance", "0");
+
     return ctx -> {
-      ConfigSection resolved = placeholders.resolveSection(args, ctx);
-
-      double raw = resolved.getDouble("chance", 0.0);
-
-      // Accept both 0.0-1.0 and 0-100 formats.
-      double chance = raw > 1.0 ? (raw / 100.0) : raw;
+      double percent = expressions.evaluate(chanceExpr, ctx);
+      double chance = percent / 100.0;
 
       // Clamp to [0, 1]
       if (chance < 0.0) chance = 0.0;

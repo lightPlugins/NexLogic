@@ -45,6 +45,7 @@ public final class MessageEffectType implements EffectTypeService {
   @Override
   public EffectInstance create(ConfigSection args) {
     String message = args == null ? "" : args.getString("message", "");
+    boolean withPrefix = args != null && args.getBoolean("with-prefix", false);
     String configPath = args == null ? "" : args.getString("config-path", "");
 
     return ctx -> {
@@ -62,7 +63,7 @@ public final class MessageEffectType implements EffectTypeService {
         }
 
         Component component = componentService
-            .builder(p, configPath, "Unknown")
+            .builder(p, configPath, "Unknown", withPrefix)
             .string(string -> placeholders.resolve(string, ctx))
             .build();
         p.sendMessage(component);

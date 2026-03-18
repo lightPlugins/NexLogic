@@ -37,9 +37,8 @@ public final class PermissionConditionType implements ConditionTypeService {
   @Override
   public ConditionInstance create(ConfigSection args) {
     return ctx -> {
-      ConfigSection resolved = placeholders.resolveSection(args, ctx);
 
-      String perm = resolved.getString("permission", null);
+      String perm = args.getString("permission", null);
 
       Player p = ctx == null ? null : ctx.get(BukkitContextKeys.PLAYER).orElse(null);
       if (p == null || !p.isOnline()) return false;

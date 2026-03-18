@@ -11,10 +11,7 @@ import io.nexstudios.framework.paper.NexPaperPlugin;
 import io.nexstudios.itemservice.bukkit.ItemServiceModule;
 import io.nexstudios.languageservice.LanguageServiceModule;
 import io.nexstudios.menuservice.bukkit.service.menu.MenuServiceModule;
-import io.nexstudios.nexlogic.bukkit.modules.BukkitRuntimeModule;
-import io.nexstudios.nexlogic.bukkit.modules.CoreModule;
-import io.nexstudios.nexlogic.bukkit.modules.EffectsModule;
-import io.nexstudios.nexlogic.bukkit.modules.PlaceholderModule;
+import io.nexstudios.nexlogic.bukkit.modules.*;
 import io.nexstudios.nexlogic.bukkit.services.effects.bootstrap.TypeBuiltinService;
 import io.nexstudios.nexlogic.bukkit.services.effects.listeners.*;
 import io.nexstudios.nexlogic.bukkit.services.effects.executor.async.AsyncExecutorService;
@@ -51,7 +48,8 @@ public final class NexLogicPlugin extends NexPaperPlugin {
         new CoreModule(),
         new PlaceholderModule(),
         new EffectsModule(),
-        new BukkitRuntimeModule()
+        new BukkitRuntimeModule(),
+        new UtilityModule()
     );
     services.installAll(modules);
 

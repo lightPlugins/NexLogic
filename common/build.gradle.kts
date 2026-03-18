@@ -5,6 +5,7 @@ plugins {
 dependencies {
 
     compileOnly("io.nexstudios:framework-paper:v1.0.2")
+    compileOnly("com.ezylang:EvalEx:3.6.0")
 
     testImplementation("io.nexstudios:framework-paper:v1.0.2")
     testImplementation(platform("org.junit:junit-bom:5.10.2"))
