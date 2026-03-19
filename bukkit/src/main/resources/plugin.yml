@@ -3,7 +3,9 @@ main: io.nexstudios.nexlogic.bukkit.NexLogicPlugin
 version: 0.1.0-SNAPSHOT
 api-version: "1.21"
 author: NexStudios
-depend: []
+softdepend:
+  - 'Nexo'
+  - 'MythicMobs'
 libraries:
   - com.zaxxer:HikariCP:5.1.0
   - org.hibernate.orm:hibernate-core:6.6.13.Final

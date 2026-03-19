@@ -7,9 +7,10 @@ plugins {
 
 dependencies {
     implementation(project(":common"))
-    implementation("io.nexstudios.itemservice:bukkit:v1.0.0")
-
     paperweight.paperDevBundle("1.21.11-R0.1-SNAPSHOT")
+
+    // nex internal module services
+    implementation("io.nexstudios.itemservice:bukkit:v1.0.0")
     implementation("io.nexstudios:framework-paper:v1.0.2")
     implementation("io.nexstudios.menuservice:bukkit:v1.0.1")
     implementation("io.nexstudios.databaseservice:bukkit:v1.0.0")
@@ -20,6 +21,23 @@ dependencies {
     // third party hooks
     compileOnly("io.lumine:Mythic-Dist:5.6.1")
     compileOnly("com.nexomc:nexo:1.20.1")
+}
+
+tasks.shadowJar {
+    archiveClassifier.set("")
+    archiveBaseName.set("NexLogic")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    val relocateBase = "io.nexstudios.nexlogic.libs"
+
+    relocate("io.nexstudios.itemservice", "$relocateBase.itemservice")
+    relocate("io.nexstudios.framework", "$relocateBase.framework")
+    relocate("io.nexstudios.menuservice", "$relocateBase.menuservice")
+    relocate("io.nexstudios.databaseservice", "$relocateBase.databaseservice")
+    relocate("io.nexstudios.configservice", "$relocateBase.configservice")
+    relocate("io.nexstudios.languageservice", "$relocateBase.languageservice")
+    relocate("io.nexstudios.commandservice", "$relocateBase.commandservice")
+
 }
 
 tasks.processResources {
