@@ -49,7 +49,8 @@ public final class NexLogicPlugin extends NexPaperPlugin {
         new PlaceholderModule(),
         new EffectsModule(),
         new BukkitRuntimeModule(),
-        new UtilityModule()
+        new UtilityModule(),
+        new HookServiceModule()
     );
     services.installAll(modules);
 

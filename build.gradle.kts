@@ -11,7 +11,9 @@ allprojects {
         mavenLocal()
         mavenCentral()
         maven("https://repo.papermc.io/repository/maven-public/")
+        maven("https://mvn.lumine.io/repository/maven-public/")
         maven("https://jitpack.io")
+        maven("https://repo.nexomc.com/releases")
     }
 }
 

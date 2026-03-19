@@ -16,6 +16,10 @@ dependencies {
     implementation("io.nexstudios.configservice:platform:v1.0.0")
     implementation("io.nexstudios.languageservice:bukkit:v1.0.0")
     implementation("io.nexstudios.commandservice:bukkit:v1.0.0")
+
+    // third party hooks
+    compileOnly("io.lumine:Mythic-Dist:5.6.1")
+    compileOnly("com.nexomc:nexo:1.20.1")
 }
 
 tasks.processResources {
