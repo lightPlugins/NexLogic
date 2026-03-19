@@ -23,22 +23,22 @@ dependencies {
     compileOnly("com.nexomc:nexo:1.20.1")
 }
 
-tasks.shadowJar {
-    archiveClassifier.set("")
-    archiveBaseName.set("NexLogic")
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
-    val relocateBase = "io.nexstudios.nexlogic.libs"
-
-    relocate("io.nexstudios.itemservice", "$relocateBase.itemservice")
-    relocate("io.nexstudios.framework", "$relocateBase.framework")
-    relocate("io.nexstudios.menuservice", "$relocateBase.menuservice")
-    relocate("io.nexstudios.databaseservice", "$relocateBase.databaseservice")
-    relocate("io.nexstudios.configservice", "$relocateBase.configservice")
-    relocate("io.nexstudios.languageservice", "$relocateBase.languageservice")
-    relocate("io.nexstudios.commandservice", "$relocateBase.commandservice")
-
-}
+//tasks.shadowJar {
+//    archiveClassifier.set("")
+//    archiveBaseName.set("NexLogic")
+//    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+//
+//    val relocateBase = "io.nexstudios.nexlogic.servicemodules"
+//
+//    relocate("io.nexstudios.itemservice", "$relocateBase.itemservice")
+//    relocate("io.nexstudios.framework", "$relocateBase.framework")
+//    relocate("io.nexstudios.menuservice", "$relocateBase.menuservice")
+//    relocate("io.nexstudios.databaseservice", "$relocateBase.databaseservice")
+//    relocate("io.nexstudios.configservice", "$relocateBase.configservice")
+//    relocate("io.nexstudios.languageservice", "$relocateBase.languageservice")
+//    relocate("io.nexstudios.commandservice", "$relocateBase.commandservice")
+//
+//}
 
 tasks.processResources {
     filteringCharset = "UTF-8"
