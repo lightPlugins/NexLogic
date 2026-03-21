@@ -45,7 +45,7 @@ public final class LogicCommandService implements Service {
   }
 
   @Command(value = "gui paged", permission = "default.admin")
-  public int opentest(NexPaperCommandSource source) {
+  public int openTest(NexPaperCommandSource source) {
     source.sender().sendMessage("Opening NexLogic GUI...");
     ExamplePagedMenu.open(services, ViewerRef.of(source.executor().getUniqueId(), source.executor().getName()));
     return 1;

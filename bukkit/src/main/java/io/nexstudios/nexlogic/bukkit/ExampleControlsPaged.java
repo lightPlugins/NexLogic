@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.function.Predicate;
 
 @Dependencies({
     ItemService.class,
@@ -201,7 +202,7 @@ public final class ExampleControlsPaged {
       }
 
       @Override
-      public java.util.function.Predicate<Entry> predicateFor(String modeId, MenuKey menuKey, ViewerRef viewer) {
+      public Predicate<Entry> predicateFor(String modeId, MenuKey menuKey, ViewerRef viewer) {
         return switch (modeId) {
           case "food" -> e -> e.category() == Category.FOOD;
           case "blocks" -> e -> e.category() == Category.BLOCK;
