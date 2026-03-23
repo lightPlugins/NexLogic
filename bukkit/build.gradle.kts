@@ -18,27 +18,13 @@ dependencies {
     implementation("io.nexstudios.languageservice:bukkit:v1.0.0")
     implementation("io.nexstudios.commandservice:bukkit:v1.0.0")
 
+    compileOnly("jakarta.persistence:jakarta.persistence-api:3.1.0")
+
     // third party hooks
     compileOnly("io.lumine:Mythic-Dist:5.6.1")
     compileOnly("com.nexomc:nexo:1.20.1")
+    compileOnly("com.palmergames.bukkit.towny:towny:0.102.0.0")
 }
-
-//tasks.shadowJar {
-//    archiveClassifier.set("")
-//    archiveBaseName.set("NexLogic")
-//    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-//
-//    val relocateBase = "io.nexstudios.nexlogic.servicemodules"
-//
-//    relocate("io.nexstudios.itemservice", "$relocateBase.itemservice")
-//    relocate("io.nexstudios.framework", "$relocateBase.framework")
-//    relocate("io.nexstudios.menuservice", "$relocateBase.menuservice")
-//    relocate("io.nexstudios.databaseservice", "$relocateBase.databaseservice")
-//    relocate("io.nexstudios.configservice", "$relocateBase.configservice")
-//    relocate("io.nexstudios.languageservice", "$relocateBase.languageservice")
-//    relocate("io.nexstudios.commandservice", "$relocateBase.commandservice")
-//
-//}
 
 tasks.processResources {
     filteringCharset = "UTF-8"

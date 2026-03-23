@@ -4,6 +4,8 @@ import io.nexstudios.nexlogic.bukkit.services.hooks.mythicmobs.DefaultMythicMobs
 import io.nexstudios.nexlogic.bukkit.services.hooks.mythicmobs.MythicMobsService;
 import io.nexstudios.nexlogic.bukkit.services.hooks.nexo.DefaultNexoService;
 import io.nexstudios.nexlogic.bukkit.services.hooks.nexo.NexoService;
+import io.nexstudios.nexlogic.bukkit.services.hooks.towny.DefaultTownyService;
+import io.nexstudios.nexlogic.bukkit.services.hooks.towny.TownyService;
 import io.nexstudios.nexlogic.common.services.logging.LoggerService;
 import io.nexstudios.serviceregistry.di.Dependencies;
 import io.nexstudios.serviceregistry.di.Service;
@@ -25,6 +27,7 @@ public class HookServiceModule implements ServiceModule {
 
     register(accessor, "Nexo", NexoService.class, DefaultNexoService.class);
     register(accessor, "MythicMobs", MythicMobsService.class, DefaultMythicMobsService.class);
+    register(accessor, "Towny", TownyService.class, DefaultTownyService.class);
 
   }
 

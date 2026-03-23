@@ -6,12 +6,14 @@ import io.nexstudios.configservice.ConfigServiceModule;
 import io.nexstudios.databaseservice.bukkit.DatabaseServiceModul;
 import io.nexstudios.databaseservice.bukkit.service.api.DatabaseAsyncService;
 import io.nexstudios.databaseservice.bukkit.service.api.DatabaseService;
-import io.nexstudios.databaseservice.bukkit.service.api.HibernateEntityRegistryService;
+import io.nexstudios.databaseservice.bukkit.service.api.HibernateMappingContributionService;
+import io.nexstudios.databaseservice.bukkit.service.api.pubsub.RedisPubSubService;
 import io.nexstudios.framework.paper.NexPaperPlugin;
 import io.nexstudios.itemservice.bukkit.ItemServiceModule;
 import io.nexstudios.languageservice.LanguageServiceModule;
 import io.nexstudios.menuservice.bukkit.service.menu.MenuServiceModule;
 import io.nexstudios.nexlogic.bukkit.modules.*;
+import io.nexstudios.nexlogic.bukkit.services.entity.EconomyBalanceEntity;
 import io.nexstudios.nexlogic.bukkit.services.effects.bootstrap.TypeBuiltinService;
 import io.nexstudios.nexlogic.bukkit.services.effects.listeners.*;
 import io.nexstudios.nexlogic.bukkit.services.effects.executor.async.AsyncExecutorService;
@@ -35,11 +37,8 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     services.install(new LanguageServiceModule(this));
     // install DatabaseService
     services.install(new DatabaseServiceModul(this));
-    initDatabase(services);
     // install ItemService
     services.install(new ItemServiceModule(this));
-    // install MenuService
-    services.install(new MenuServiceModule(this));
     // install Command Service
     services.install(new CommandServiceModule(this));
 
@@ -49,8 +48,7 @@ public final class NexLogicPlugin extends NexPaperPlugin {
         new PlaceholderModule(),
         new EffectsModule(),
         new BukkitRuntimeModule(),
-        new UtilityModule(),
-        new HookServiceModule()
+        new UtilityModule()
     );
     services.installAll(modules);
 
@@ -64,6 +62,10 @@ public final class NexLogicPlugin extends NexPaperPlugin {
   @Override
   protected void start() {
     getLogger().info("NexLogic is starting...");
+    // install MenuService (require ItemService loaded)
+    services().install(new HookServiceModule());
+    services().install(new MenuServiceModule(this));
+    initDatabase(services());
 
     // register Commands
     services().getService(CommandService.class).registerAll(
@@ -91,19 +93,23 @@ public final class NexLogicPlugin extends NexPaperPlugin {
 
   @Override
   protected void stop() {
+    services().getService(RedisPubSubService.class).shutdown();
     services().getService(AsyncExecutorService.class).shutdown();
     getLogger().info("NexLogic is stopping...");
   }
 
   private void initDatabase(ServiceAccessor services) {
-    registerEntities(services.getService(HibernateEntityRegistryService.class));
+    HibernateMappingContributionService mapping = services.getService(HibernateMappingContributionService.class);
+    mapping.contribute(this, EconomyBalanceEntity.class);
+
     DatabaseService db = services.getService(DatabaseService.class);
     db.start();
+
     DatabaseAsyncService dbAsync = services.getService(DatabaseAsyncService.class);
     dbAsync.start();
+
+    RedisPubSubService pubSub = services.getService(RedisPubSubService.class);
+    pubSub.start();
   }
 
-  private void registerEntities(HibernateEntityRegistryService reg) {
-
-  }
 }
