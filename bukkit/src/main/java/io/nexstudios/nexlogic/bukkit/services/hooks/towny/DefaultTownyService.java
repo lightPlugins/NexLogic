@@ -8,7 +8,6 @@ import java.util.UUID;
 public class DefaultTownyService implements TownyService {
 
   @Override
-
   public Optional<UUID> getTownUUID(String townName) {
     return Optional.ofNullable(TownyEconomyHandler.getTownyObjectUUID(townName));
   }
