@@ -11,6 +11,7 @@ import io.nexstudios.nexlogic.common.services.triggers.schema.ContextCapability;
 import io.nexstudios.nexlogic.common.effects.types.EffectTypeService;
 import io.nexstudios.serviceregistry.di.Dependencies;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 
 import java.util.Set;
@@ -46,7 +47,7 @@ public final class MessageEffectType implements EffectTypeService {
   public EffectInstance create(ConfigSection args) {
     String message = args == null ? "" : args.getString("message", "");
     boolean withPrefix = args != null && args.getBoolean("with-prefix", false);
-    String configPath = args == null ? "" : args.getString("config-path", "");
+    String configPath = args == null ? null : args.getString("config-path", null);
 
     return ctx -> {
       if (ctx == null) return;
@@ -57,8 +58,8 @@ public final class MessageEffectType implements EffectTypeService {
       Runnable send = () -> {
         if (!p.isOnline()) return;
 
-        if (configPath.isBlank()) {
-          p.sendMessage(placeholders.resolve(message, ctx));
+        if (configPath == null) {
+          p.sendMessage(MiniMessage.miniMessage().deserialize(placeholders.resolve(message, ctx)));
           return;
         }
 

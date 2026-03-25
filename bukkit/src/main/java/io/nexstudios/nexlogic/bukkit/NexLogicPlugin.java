@@ -19,6 +19,7 @@ import io.nexstudios.nexlogic.bukkit.services.effects.listeners.*;
 import io.nexstudios.nexlogic.bukkit.services.effects.executor.async.AsyncExecutorService;
 import io.nexstudios.nexlogic.bukkit.services.effects.command.LogicCommandService;
 import io.nexstudios.nexlogic.bukkit.services.effects.reload.ReloadService;
+import io.nexstudios.nexlogic.bukkit.services.entity.nexeconomy.*;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
 import io.nexstudios.serviceregistry.di.ServiceModule;
 import org.jetbrains.annotations.NotNull;
@@ -101,6 +102,11 @@ public final class NexLogicPlugin extends NexPaperPlugin {
   private void initDatabase(ServiceAccessor services) {
     HibernateMappingContributionService mapping = services.getService(HibernateMappingContributionService.class);
     mapping.contribute(this, EconomyBalanceEntity.class);
+    mapping.contribute(this, BankMemberEntity.class);
+    mapping.contribute(this, BankInviteEntity.class);
+    mapping.contribute(this, BankWithdrawUsageEntity.class);
+    mapping.contribute(this, BankTransactionEntity.class);
+    mapping.contribute(this, BankAccountEntity.class);
 
     DatabaseService db = services.getService(DatabaseService.class);
     db.start();
