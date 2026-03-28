@@ -107,6 +107,8 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     mapping.contribute(this, BankWithdrawUsageEntity.class);
     mapping.contribute(this, BankTransactionEntity.class);
     mapping.contribute(this, BankAccountEntity.class);
+    mapping.contribute(this, BankUnlockEntity.class);
+    mapping.contribute(this, BankAccountLockEntity.class);
 
     DatabaseService db = services.getService(DatabaseService.class);
     db.start();
