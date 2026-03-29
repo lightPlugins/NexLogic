@@ -20,8 +20,7 @@ public final class DefaultActionRuntimeService implements ActionRuntimeService {
       try {
         ok = cond.test(ctx);
       } catch (Throwable t) {
-        loggerService.logger().severe("Condition threw an exception in action '" + action.id() + "': " + t.getMessage());
-        t.printStackTrace();
+        loggerService.logger().severe("Condition threw exception in action '" + action.id() + "': " + t.getClass().getSimpleName() + " " + t.getMessage());
         return;
       }
       if (!ok) return;
@@ -31,8 +30,7 @@ public final class DefaultActionRuntimeService implements ActionRuntimeService {
       try {
         eff.run(ctx);
       } catch (Throwable t) {
-        loggerService.logger().severe("Effect threw an exception in action '" + action.id() + "': " + t.getMessage());
-        t.printStackTrace();
+        loggerService.logger().severe("Effect threw exception in action '" + action.id() + "': " + t.getClass().getSimpleName() + " " + t.getMessage());
       }
     }
   }

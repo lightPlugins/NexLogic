@@ -27,6 +27,10 @@ public final class DefaultTriggerBusService implements TriggerBusService {
     this.registrations = accessor.getService(TriggerRegistrationService.class);
   }
 
+  public void updateActive(Map<String, List<CompiledAction>> newMap) {
+    active.set(newMap == null ? Map.of() : newMap);
+  }
+
   @Override
   public void fire(String triggerId, LogicContext ctx) {
     var map = active.get();

@@ -19,7 +19,11 @@ import io.nexstudios.nexlogic.bukkit.services.effects.listeners.*;
 import io.nexstudios.nexlogic.bukkit.services.effects.executor.async.AsyncExecutorService;
 import io.nexstudios.nexlogic.bukkit.services.effects.command.LogicCommandService;
 import io.nexstudios.nexlogic.bukkit.services.effects.reload.ReloadService;
+import io.nexstudios.nexlogic.bukkit.services.entity.EconomyBalanceEntity;
 import io.nexstudios.nexlogic.bukkit.services.entity.nexeconomy.*;
+import io.nexstudios.nexlogic.common.services.engine.LogicEngineService;
+import io.nexstudios.nexlogic.common.services.triggers.bus.TriggerBusService;
+import io.nexstudios.nexlogic.common.services.triggers.register.TriggerRegistrationService;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
 import io.nexstudios.serviceregistry.di.ServiceModule;
 import org.jetbrains.annotations.NotNull;
@@ -63,30 +67,36 @@ public final class NexLogicPlugin extends NexPaperPlugin {
   @Override
   protected void start() {
     getLogger().info("NexLogic is starting...");
-    // install MenuService (require ItemService loaded)
     services().install(new HookServiceModule());
     services().install(new MenuServiceModule(this));
     initDatabase(services());
 
-    // register Commands
     services().getService(CommandService.class).registerAll(
         List.of(
             LogicCommandService.class
         )
     );
 
-    // register example Menus
     ExampleMainMenu.register(services());
     ExamplePagedMenu.register(services());
     ExampleControlsPaged.register(services());
 
-    // Register trigger listeners
     services().getService(TriggerListenerService.class).registerAll();
 
-    // Register built-in Bukkit types (conditions/effects/filters)
     services().getService(TypeBuiltinService.class).registerAll();
 
-    // Initial load/compile async, then swap automatically
+    LogicEngineService engine = services().getService(LogicEngineService.class);
+    TriggerBusService bus = services().getService(TriggerBusService.class);
+    TriggerRegistrationService registrations = services().getService(TriggerRegistrationService.class);
+    
+    if (engine instanceof io.nexstudios.nexlogic.common.services.engine.DefaultLogicEngineService) {
+      ((io.nexstudios.nexlogic.common.services.engine.DefaultLogicEngineService) engine).setTriggerBus(bus);
+    }
+    
+    if (registrations instanceof io.nexstudios.nexlogic.common.services.triggers.register.DefaultTriggerRegistrationService) {
+      ((io.nexstudios.nexlogic.common.services.triggers.register.DefaultTriggerRegistrationService) registrations).setInternalOwner("nexlogic");
+    }
+
     services().getService(ReloadService.class).reloadAsync();
 
     getLogger().info("NexLogic started.");
@@ -109,6 +119,7 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     mapping.contribute(this, BankAccountEntity.class);
     mapping.contribute(this, BankUnlockEntity.class);
     mapping.contribute(this, BankAccountLockEntity.class);
+    mapping.contribute(this, BankLevelEntity.class);
 
     DatabaseService db = services.getService(DatabaseService.class);
     db.start();

@@ -15,12 +15,14 @@ import io.nexstudios.nexlogic.common.services.registry.effect.EffectTypeRegistry
 import io.nexstudios.nexlogic.common.services.triggers.register.TriggerRegistrationService;
 import io.nexstudios.nexlogic.common.services.triggers.schema.ContextCapability;
 import io.nexstudios.nexlogic.common.services.triggers.schema.TriggerContextSchemaService;
+import io.nexstudios.nexlogic.common.services.triggers.bus.TriggerBusService;
 import io.nexstudios.serviceregistry.di.Dependencies;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 /**
  * A service for managing logic execution using registered conditions, effects, and triggers.
@@ -34,6 +36,10 @@ import java.util.function.Predicate;
 })
 public final class DefaultLogicEngineService implements LogicEngineService {
 
+  private static final Pattern INVALID_PATH_CHARS = Pattern.compile("[^a-z0-9/._-]");
+  private static final Pattern MULTI_SLASH = Pattern.compile("/{2,}");
+  private static final Pattern INVALID_SEGMENT_CHARS = Pattern.compile("[^a-z0-9._-]");
+
   private final ConditionTypeRegistryService conditions;
   private final EffectTypeRegistryService effects;
   private final FilterService filters;
@@ -41,6 +47,7 @@ public final class DefaultLogicEngineService implements LogicEngineService {
   private final TriggerContextSchemaService schema;
   private final LoggerService loggerService;
   private final String ownerNamespace;
+  private volatile TriggerBusService triggerBus;
 
   public DefaultLogicEngineService(ServiceAccessor accessor) {
     this.conditions = accessor.getService(ConditionTypeRegistryService.class);
@@ -53,11 +60,19 @@ public final class DefaultLogicEngineService implements LogicEngineService {
     this.ownerNamespace = NexKey.normalizeNamespace(platformPluginService.name());
   }
 
+  public void setTriggerBus(TriggerBusService bus) {
+    this.triggerBus = bus;
+  }
+
   @Override
   public void registerEffectStyle(String owner, List<ConfigSection> effectEntries) {
     Objects.requireNonNull(owner, "owner");
     var compiled = compileEffectStyleToActions(owner, effectEntries);
     registrations.registerOwner(owner, compiled);
+    
+    if (triggerBus != null) {
+      triggerBus.updateActive(registrations.getInternalByTrigger());
+    }
   }
 
   @Override
@@ -70,6 +85,10 @@ public final class DefaultLogicEngineService implements LogicEngineService {
   @Override
   public void unregisterOwner(String owner) {
     registrations.unregisterOwner(owner);
+    
+    if (triggerBus != null) {
+      triggerBus.updateActive(registrations.getInternalByTrigger());
+    }
   }
 
   @Override
@@ -225,14 +244,9 @@ public final class DefaultLogicEngineService implements LogicEngineService {
     if (in == null || in.isBlank()) return "unknown";
     String s = NexKey.normalizeKey(in);
 
-    // allow path separators, replace ":" and other invalid chars
     s = s.replace(':', '/');
-
-    // keep only allowed chars: [a-z0-9/._-]
-    s = s.replaceAll("[^a-z0-9/._-]", "_");
-
-    // avoid accidental empty segments like "actions://"
-    s = s.replaceAll("/{2,}", "/");
+    s = INVALID_PATH_CHARS.matcher(s).replaceAll("_");
+    s = MULTI_SLASH.matcher(s).replaceAll("/");
     if (s.startsWith("/")) s = s.substring(1);
     if (s.endsWith("/")) s = s.substring(0, s.length() - 1);
 
@@ -243,11 +257,8 @@ public final class DefaultLogicEngineService implements LogicEngineService {
     if (in == null || in.isBlank()) return "unknown";
     String s = NexKey.normalizeKey(in);
 
-    // segments must not contain "/" ideally; convert it to "_"
     s = s.replace('/', '_');
-
-    // keep only allowed chars: [a-z0-9._-]
-    s = s.replaceAll("[^a-z0-9._-]", "_");
+    s = INVALID_SEGMENT_CHARS.matcher(s).replaceAll("_");
 
     return s.isBlank() ? "unknown" : s;
   }

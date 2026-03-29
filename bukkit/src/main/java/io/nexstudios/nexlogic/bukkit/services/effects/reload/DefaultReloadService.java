@@ -8,13 +8,13 @@ import io.nexstudios.nexlogic.bukkit.services.placeholder.PlaceholderReloadServi
 import io.nexstudios.nexlogic.common.services.placeholder.cache.PlaceholderCacheOptionsService;
 import io.nexstudios.nexlogic.bukkit.services.placeholder.runtime.options.resolve.PlaceholderResolveOptionsService;
 import io.nexstudios.nexlogic.common.services.engine.LogicEngineService;
+import io.nexstudios.nexlogic.common.services.triggers.bus.TriggerBusService;
 import io.nexstudios.serviceregistry.di.Dependencies;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 @Dependencies({
@@ -24,7 +24,8 @@ import java.util.logging.Logger;
     PlaceholderReloadService.class,
     PlaceholderResolveOptionsService.class,
     PlaceholderCacheOptionsService.class,
-    LanguageService.class
+    LanguageService.class,
+    TriggerBusService.class
 })
 public final class DefaultReloadService implements ReloadService {
 
@@ -32,19 +33,22 @@ public final class DefaultReloadService implements ReloadService {
   private final AsyncExecutorService async;
   private final YamlLoaderService loader;
   private final LogicEngineService engine;
+  private final TriggerBusService triggerBus;
   private final PlaceholderReloadService placeholders;
   private final PlaceholderResolveOptionsService placeholderOptions;
   private final PlaceholderCacheOptionsService placeholderCacheOptions;
   private final LanguageService languageService;
   private final Logger logger;
 
-  private final Set<String> lastOwners = ConcurrentHashMap.newKeySet();
+  private final Object lastOwnersMutex = new Object();
+  private final Set<String> lastOwners = new HashSet<>();
 
   public DefaultReloadService(PaperPluginService core) {
     this.services = core.plugin().services();
     this.async = services.getService(AsyncExecutorService.class);
     this.loader = services.getService(YamlLoaderService.class);
     this.engine = services.getService(LogicEngineService.class);
+    this.triggerBus = services.getService(TriggerBusService.class);
     this.placeholders = services.getService(PlaceholderReloadService.class);
     this.placeholderOptions = services.getService(PlaceholderResolveOptionsService.class);
     this.placeholderCacheOptions = services.getService(PlaceholderCacheOptionsService.class);
@@ -58,13 +62,10 @@ public final class DefaultReloadService implements ReloadService {
       logger.info("Reload started...");
 
       try {
-        // reload language first
         languageService.reload();
-        // Reload resolve limits first
         placeholderOptions.reload();
         placeholderCacheOptions.reload();
 
-        // Reload placeholders before effects (effects may reference them at runtime)
         placeholders.reloadAll();
 
         var args = loader.loadArguments();
@@ -72,23 +73,26 @@ public final class DefaultReloadService implements ReloadService {
 
         logger.info("Reload: loaded effect-style packs owners=" + packs.size());
 
-        Set<String> now = new HashSet<>(packs.keySet());
-        for (String old : new HashSet<>(lastOwners)) {
-          if (!now.contains(old)) {
-            engine.unregisterOwner(old);
-            lastOwners.remove(old);
+        synchronized (lastOwnersMutex) {
+          Set<String> now = new HashSet<>(packs.keySet());
+          Set<String> oldCopy = new HashSet<>(lastOwners);
+          
+          for (String old : oldCopy) {
+            if (!now.contains(old)) {
+              engine.unregisterOwner(old);
+              lastOwners.remove(old);
+            }
           }
-        }
 
-        for (var e : packs.entrySet()) {
-          engine.registerEffectStyle(e.getKey(), e.getValue());
-          lastOwners.add(e.getKey());
+          for (var e : packs.entrySet()) {
+            engine.registerEffectStyle(e.getKey(), e.getValue());
+            lastOwners.add(e.getKey());
+          }
         }
 
         logger.info("Reload completed. effectStyleOwners=" + packs.size());
       } catch (Throwable t) {
-        logger.severe("Reload FAILED: " + t.getMessage());
-        t.printStackTrace();
+        logger.severe("Reload FAILED: " + t.getClass().getSimpleName() + " " + t.getMessage());
       } finally {
         logger.info("Reload finished (async task ended).");
       }
@@ -96,8 +100,7 @@ public final class DefaultReloadService implements ReloadService {
 
     f.whenComplete((ok, ex) -> {
       if (ex != null) {
-        logger.severe("Reload async future completed exceptionally: " + ex.getMessage());
-        ex.printStackTrace();
+        logger.severe("Reload async future failed: " + ex.getClass().getSimpleName() + " " + ex.getMessage());
       }
     });
   }
