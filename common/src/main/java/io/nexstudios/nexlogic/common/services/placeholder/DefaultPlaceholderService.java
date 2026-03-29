@@ -23,9 +23,6 @@ public final class DefaultPlaceholderService implements PlaceholderService {
 
   private static final Pattern TOKEN = Pattern.compile("%([^%]+)%");
 
-  /**
-   * Warn at most once per cooldown window when cache overflows.
-   */
   private static final long OVERFLOW_WARN_COOLDOWN_NANOS = Duration.ofSeconds(30).toNanos();
   private static final long EXPIRED_CLEANUP_EVERY_PUTS = 1024L;
 
@@ -33,6 +30,7 @@ public final class DefaultPlaceholderService implements PlaceholderService {
   private final PlaceholderCacheOptionsService cacheOptions;
   private final AtomicLong lastOverflowWarnNanos = new AtomicLong(0L);
   private final AtomicLong cachePutCounter = new AtomicLong(0L);
+  private final AtomicLong cacheAccessCounter = new AtomicLong(0L);
 
   private final ConcurrentHashMap<String, Set<PlaceholderKey>> keysByOwner = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<PlaceholderKey, Entry> registry = new ConcurrentHashMap<>();
@@ -66,8 +64,15 @@ public final class DefaultPlaceholderService implements PlaceholderService {
         }
       }
 
-      // Drop cached values tied to the old owner for this key (avoid stale retention)
-      cache.keySet().removeIf(k -> k.owner.equals(previous.owner) && k.key.equals(key));
+      List<CacheKey> toRemove = new java.util.ArrayList<>();
+      for (CacheKey ck : cache.keySet()) {
+        if (ck.owner.equals(previous.owner) && ck.key.equals(key)) {
+          toRemove.add(ck);
+        }
+      }
+      for (CacheKey ck : toRemove) {
+        cache.remove(ck);
+      }
     }
 
     keysByOwner.compute(normalizedOwner, (o, set) -> {
@@ -258,16 +263,18 @@ public final class DefaultPlaceholderService implements PlaceholderService {
       cache.remove(key, e);
       return null;
     }
+
+    cacheAccessCounter.incrementAndGet();
     return e.value;
   }
 
   private void putCached(CacheKey key, String value, Duration ttl) {
     if (ttl == null || ttl.isZero() || ttl.isNegative()) return;
 
-    long expires = System.nanoTime() + ttl.toNanos();
-    cache.put(key, new CacheEntry(value, expires));
+    long now = System.nanoTime();
+    long expires = now + ttl.toNanos();
+    cache.put(key, new CacheEntry(value, expires, now));
 
-    // Opportunistic cleanup: keeps expired entries from lingering when cache never overflows.
     long n = cachePutCounter.incrementAndGet();
     if ((n & (EXPIRED_CLEANUP_EVERY_PUTS - 1)) == 0L) {
       cleanupExpiredEntries();
@@ -282,20 +289,20 @@ public final class DefaultPlaceholderService implements PlaceholderService {
     int size = cache.size();
     if (size <= max) return;
 
-    // First remove expired entries
     cleanupExpiredEntries();
 
     int afterCleanup = cache.size();
     if (afterCleanup <= max) return;
 
-    int target = (int) (max * 0.95); // small hysteresis
+    int target = (int) (max * 0.95);
     int toRemove = Math.max(1, afterCleanup - target);
 
+    List<Map.Entry<CacheKey, CacheEntry>> entries = new ArrayList<>(cache.entrySet());
+    entries.sort((a, b) -> Long.compare(a.getValue().lastAccessNanos, b.getValue().lastAccessNanos));
+
     int removed = 0;
-    Iterator<CacheKey> it = cache.keySet().iterator();
-    while (it.hasNext() && removed < toRemove) {
-      it.next();
-      it.remove();
+    for (int i = 0; i < entries.size() && removed < toRemove; i++) {
+      cache.remove(entries.get(i).getKey());
       removed++;
     }
 
@@ -333,6 +340,6 @@ public final class DefaultPlaceholderService implements PlaceholderService {
   private record Entry(String owner, PlaceholderProvider provider, Duration ttl) {}
   private record Parse(PlaceholderKey key) {}
   private record CacheKey(String owner, PlaceholderKey key, String scope) {}
-  private record CacheEntry(String value, long expiresAtNanos) {}
+  private record CacheEntry(String value, long expiresAtNanos, long lastAccessNanos) {}
 
 }

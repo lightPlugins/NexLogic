@@ -9,8 +9,6 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Tracks player-placed blocks per chunk using Chunk PersistentDataContainer.
@@ -147,24 +145,20 @@ public final class PlayerPlacedBlockTrackerService implements Service {
   private static long[] remove(long[] existing, long v) {
     if (existing == null || existing.length == 0) return existing;
 
-    boolean found = false;
-    for (long x : existing) {
-      if (x == v) {
-        found = true;
+    int idx = -1;
+    for (int i = 0; i < existing.length; i++) {
+      if (existing[i] == v) {
+        idx = i;
         break;
       }
     }
-    if (!found) return existing;
+    if (idx < 0) return existing;
 
-    // For small arrays this is fine; also ensures we don't keep duplicates.
-    Set<Long> set = new HashSet<>(existing.length);
-    for (long x : existing) if (x != v) set.add(x);
+    if (existing.length == 1) return new long[0];
 
-    if (set.isEmpty()) return new long[0];
-
-    long[] out = new long[set.size()];
-    int i = 0;
-    for (Long x : set) out[i++] = x;
+    long[] out = new long[existing.length - 1];
+    System.arraycopy(existing, 0, out, 0, idx);
+    System.arraycopy(existing, idx + 1, out, idx, existing.length - idx - 1);
     return out;
   }
 

@@ -17,4 +17,8 @@ public interface TriggerRegistrationService extends Service {
   void unregisterOwner(String owner);
 
   List<CompiledAction> combine(String triggerIdLower, List<CompiledAction> base);
+
+  Map<String, List<CompiledAction>> getAllByTrigger();
+
+  Map<String, List<CompiledAction>> getInternalByTrigger();
 }
