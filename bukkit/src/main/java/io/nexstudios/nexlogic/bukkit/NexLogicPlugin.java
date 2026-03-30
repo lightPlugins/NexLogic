@@ -19,10 +19,11 @@ import io.nexstudios.nexlogic.bukkit.services.effects.listeners.*;
 import io.nexstudios.nexlogic.bukkit.services.effects.executor.async.AsyncExecutorService;
 import io.nexstudios.nexlogic.bukkit.services.effects.command.LogicCommandService;
 import io.nexstudios.nexlogic.bukkit.services.effects.reload.ReloadService;
-import io.nexstudios.nexlogic.bukkit.services.entity.EconomyBalanceEntity;
 import io.nexstudios.nexlogic.bukkit.services.entity.nexeconomy.*;
+import io.nexstudios.nexlogic.common.services.engine.DefaultLogicEngineService;
 import io.nexstudios.nexlogic.common.services.engine.LogicEngineService;
 import io.nexstudios.nexlogic.common.services.triggers.bus.TriggerBusService;
+import io.nexstudios.nexlogic.common.services.triggers.register.DefaultTriggerRegistrationService;
 import io.nexstudios.nexlogic.common.services.triggers.register.TriggerRegistrationService;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
 import io.nexstudios.serviceregistry.di.ServiceModule;
@@ -89,12 +90,12 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     TriggerBusService bus = services().getService(TriggerBusService.class);
     TriggerRegistrationService registrations = services().getService(TriggerRegistrationService.class);
     
-    if (engine instanceof io.nexstudios.nexlogic.common.services.engine.DefaultLogicEngineService) {
-      ((io.nexstudios.nexlogic.common.services.engine.DefaultLogicEngineService) engine).setTriggerBus(bus);
+    if (engine instanceof DefaultLogicEngineService) {
+      ((DefaultLogicEngineService) engine).setTriggerBus(bus);
     }
     
-    if (registrations instanceof io.nexstudios.nexlogic.common.services.triggers.register.DefaultTriggerRegistrationService) {
-      ((io.nexstudios.nexlogic.common.services.triggers.register.DefaultTriggerRegistrationService) registrations).setInternalOwner("nexlogic");
+    if (registrations instanceof DefaultTriggerRegistrationService) {
+      ((DefaultTriggerRegistrationService) registrations).setInternalOwner("nexlogic");
     }
 
     services().getService(ReloadService.class).reloadAsync();
@@ -119,7 +120,6 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     mapping.contribute(this, BankAccountEntity.class);
     mapping.contribute(this, BankUnlockEntity.class);
     mapping.contribute(this, BankAccountLockEntity.class);
-    mapping.contribute(this, BankLevelEntity.class);
 
     DatabaseService db = services.getService(DatabaseService.class);
     db.start();
