@@ -10,6 +10,7 @@ import io.nexstudios.databaseservice.bukkit.service.api.HibernateMappingContribu
 import io.nexstudios.databaseservice.bukkit.service.api.pubsub.RedisPubSubService;
 import io.nexstudios.dialogservice.DialogService;
 import io.nexstudios.framework.paper.NexPaperPlugin;
+import io.nexstudios.headservice.HeadServiceModule;
 import io.nexstudios.itemservice.bukkit.ItemServiceModule;
 import io.nexstudios.languageservice.LanguageServiceModule;
 import io.nexstudios.menuservice.bukkit.service.menu.MenuServiceModule;
@@ -45,6 +46,8 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     services.install(new LanguageServiceModule(this));
     // install Dialog Service
     services.install(new DialogService());
+    // install Head Service
+    services.install(new HeadServiceModule(this));
     // install DatabaseService
     services.install(new DatabaseServiceModul(this));
     // install ItemService
