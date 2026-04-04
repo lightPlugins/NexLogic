@@ -17,6 +17,8 @@ dependencies {
     implementation("io.nexstudios.configservice:platform:v1.0.0")
     implementation("io.nexstudios.languageservice:bukkit:v1.0.0")
     implementation("io.nexstudios.commandservice:bukkit:v1.0.0")
+    implementation("io.nexstudios.dialogservice:bukkit:v1.0.0")
+    implementation("io.nexstudios.headservice:bukkit:v1.0.0")
 
     compileOnly("jakarta.persistence:jakarta.persistence-api:3.1.0")
 

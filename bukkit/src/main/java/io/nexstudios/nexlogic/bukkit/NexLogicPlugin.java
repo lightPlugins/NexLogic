@@ -8,7 +8,9 @@ import io.nexstudios.databaseservice.bukkit.service.api.DatabaseAsyncService;
 import io.nexstudios.databaseservice.bukkit.service.api.DatabaseService;
 import io.nexstudios.databaseservice.bukkit.service.api.HibernateMappingContributionService;
 import io.nexstudios.databaseservice.bukkit.service.api.pubsub.RedisPubSubService;
+import io.nexstudios.dialogservice.DialogService;
 import io.nexstudios.framework.paper.NexPaperPlugin;
+import io.nexstudios.headservice.HeadServiceModule;
 import io.nexstudios.itemservice.bukkit.ItemServiceModule;
 import io.nexstudios.languageservice.LanguageServiceModule;
 import io.nexstudios.menuservice.bukkit.service.menu.MenuServiceModule;
@@ -27,6 +29,7 @@ import io.nexstudios.nexlogic.common.services.triggers.register.DefaultTriggerRe
 import io.nexstudios.nexlogic.common.services.triggers.register.TriggerRegistrationService;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
 import io.nexstudios.serviceregistry.di.ServiceModule;
+import net.minecraft.server.dialog.DialogListDialog;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -41,6 +44,10 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     services.install(new ConfigServiceModule(getDataPath(), getClassLoader()));
     // install LanguageService (require ConfigService loaded)
     services.install(new LanguageServiceModule(this));
+    // install Dialog Service
+    services.install(new DialogService());
+    // install Head Service
+    services.install(new HeadServiceModule(this));
     // install DatabaseService
     services.install(new DatabaseServiceModul(this));
     // install ItemService
