@@ -36,14 +36,23 @@ public interface HeadService extends Service {
   CompletableFuture<ItemStack> loadHead(UUID playerUuid);
 
   /**
-   * Warms up the head cache from persistent storage.
+   * Warms up the head cache from persistent storage asynchronously.
    * <p>
-   * Implementations should load all saved head records, rebuild the corresponding
-   * item stacks, and populate the in-memory cache before completing.
+   * Implementations may use this for non-startup refreshes. Startup should use the
+   * synchronous warmup method so the plugin can finish initializing only after all
+   * restored heads are available in memory.
    *
    * @return a future that completes once warm-up has finished
    */
   CompletableFuture<Void> warmUp();
+
+  /**
+   * Warms up the head cache from persistent storage synchronously.
+   * <p>
+   * This is intended for server startup, where the plugin should not continue until
+   * all restored heads have been loaded into memory.
+   */
+  void warmUpSync();
 
   /**
    * Removes a single player head from the in-memory cache.

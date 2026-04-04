@@ -12,7 +12,6 @@ import io.nexstudios.dialogservice.DialogService;
 import io.nexstudios.framework.paper.NexPaperPlugin;
 import io.nexstudios.itemservice.bukkit.ItemServiceModule;
 import io.nexstudios.languageservice.LanguageServiceModule;
-import io.nexstudios.menuservice.bukkit.service.menu.MenuServiceModule;
 import io.nexstudios.nexlogic.bukkit.modules.*;
 import io.nexstudios.nexlogic.bukkit.services.entity.EconomyBalanceEntity;
 import io.nexstudios.nexlogic.bukkit.services.entity.heads.HeadEntity;
@@ -74,10 +73,10 @@ public final class NexLogicPlugin extends NexPaperPlugin {
   protected void start() {
     getLogger().info("NexLogic is starting...");
     services().install(new HookServiceModule());
-    services().install(new MenuServiceModule(this));
+    // services().install(new MenuServiceModule(this));
     initDatabase(services());
     services().install(new HeadServiceModule());
-    services().getService(HeadService.class).warmUp().join();
+    services().getService(HeadService.class).warmUpSync();
 
     services().getService(CommandService.class).registerAll(
         List.of(

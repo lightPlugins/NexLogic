@@ -37,17 +37,17 @@ public final class DefaultHeadService implements HeadService {
   private static final String TEXTURE_PROPERTY = "textures";
 
   private final MainThreadExecutorService mainThread;
+  private final AsyncExecutorService async;
   private final Logger logger;
   private final HeadRepository repository;
   private final ConcurrentHashMap<UUID, CachedHead> cache = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<UUID, CompletableFuture<ItemStack>> inFlightLoads = new ConcurrentHashMap<>();
-  private final CompletableFuture<Void> warmupFuture;
 
   public DefaultHeadService(ServiceAccessor services) {
     this.mainThread = services.getService(MainThreadExecutorService.class);
+    this.async = services.getService(AsyncExecutorService.class);
     this.logger = services.getService(LoggerService.class).logger();
     this.repository = new DefaultHeadRepository(services);
-    this.warmupFuture = startWarmup();
   }
 
   @Override
@@ -71,7 +71,18 @@ public final class DefaultHeadService implements HeadService {
 
   @Override
   public CompletableFuture<Void> warmUp() {
-    return warmupFuture;
+    return async.runAsync(this::warmUpSync);
+  }
+
+  @Override
+  public void warmUpSync() {
+    try {
+      List<HeadEntity> entities = repository.findAll().join();
+      int loadedCount = cacheRestoredHeadsSync(entities);
+      logger.info("HeadService warm-up finished. Loaded " + loadedCount + " player heads.");
+    } catch (Throwable ex) {
+      logger.warning("Failed to warm up cached player heads: " + ex.getMessage());
+    }
   }
 
   @Override
@@ -87,41 +98,19 @@ public final class DefaultHeadService implements HeadService {
     cache.clear();
   }
 
-  private CompletableFuture<Void> startWarmup() {
-    return repository.findAll()
-        .thenCompose(this::cacheRestoredHeads)
-        .thenAccept(loadedCount -> logger.info("HeadService warm-up finished. Loaded " + loadedCount + " player heads."))
-        .exceptionally(ex -> {
-          logger.warning("Failed to warm up cached player heads: " + ex.getMessage());
-          return null;
-        });
-  }
-
-  private CompletableFuture<Integer> cacheRestoredHeads(List<HeadEntity> entities) {
-    if (entities.isEmpty()) {
-      return CompletableFuture.completedFuture(0);
-    }
-
-    List<CompletableFuture<Void>> tasks = new ArrayList<>(entities.size());
-    int[] loadedCount = {0};
+  private int cacheRestoredHeadsSync(List<HeadEntity> entities) {
+    int loadedCount = 0;
     for (HeadEntity entity : entities) {
       if (entity == null || entity.getPlayerUuid() == null || isBlank(entity.getTextureBase64())) {
         continue;
       }
-      tasks.add(buildCachedHeadFromTexture(entity.getPlayerUuid(), entity.getPlayerName(), entity.getTextureBase64()).thenAccept(item -> {
-        if (item == null) {
-          logger.warning("Failed to rebuild cached head for " + entity.getPlayerUuid());
-        } else {
-          loadedCount[0]++;
-        }
-      }));
+
+      ItemStack item = buildHeadItem(entity.getPlayerUuid(), entity.getPlayerName(), entity.getTextureBase64(), null);
+      cache.put(entity.getPlayerUuid(), new CachedHead(item.clone(), normalizeName(entity.getPlayerName()), entity.getTextureBase64()));
+      loadedCount++;
     }
 
-    if (tasks.isEmpty()) {
-      return CompletableFuture.completedFuture(0);
-    }
-
-    return CompletableFuture.allOf(tasks.toArray(CompletableFuture[]::new)).thenApply(ignored -> loadedCount[0]);
+    return loadedCount;
   }
 
   private CompletableFuture<ItemStack> loadHeadInternal(UUID playerUuid) {
