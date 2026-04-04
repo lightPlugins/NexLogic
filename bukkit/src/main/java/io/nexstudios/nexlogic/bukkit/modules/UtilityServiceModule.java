@@ -5,7 +5,7 @@ import io.nexstudios.nexlogic.bukkit.services.expression.ExpressionService;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
 import io.nexstudios.serviceregistry.di.ServiceModule;
 
-public class UtilityModule implements ServiceModule {
+public class UtilityServiceModule implements ServiceModule {
 
   @Override
   public void install(ServiceAccessor serviceAccessor) {

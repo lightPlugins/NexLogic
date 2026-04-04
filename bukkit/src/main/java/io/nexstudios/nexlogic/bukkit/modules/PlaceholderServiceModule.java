@@ -15,7 +15,7 @@ import io.nexstudios.nexlogic.common.services.placeholder.loader.PlaceholderYaml
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
 import io.nexstudios.serviceregistry.di.ServiceModule;
 
-public final class PlaceholderModule implements ServiceModule {
+public final class PlaceholderServiceModule implements ServiceModule {
 
   @Override
   public void install(ServiceAccessor services) {

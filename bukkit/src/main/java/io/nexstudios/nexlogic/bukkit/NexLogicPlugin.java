@@ -10,18 +10,19 @@ import io.nexstudios.databaseservice.bukkit.service.api.HibernateMappingContribu
 import io.nexstudios.databaseservice.bukkit.service.api.pubsub.RedisPubSubService;
 import io.nexstudios.dialogservice.DialogService;
 import io.nexstudios.framework.paper.NexPaperPlugin;
-import io.nexstudios.headservice.HeadServiceModule;
 import io.nexstudios.itemservice.bukkit.ItemServiceModule;
 import io.nexstudios.languageservice.LanguageServiceModule;
 import io.nexstudios.menuservice.bukkit.service.menu.MenuServiceModule;
 import io.nexstudios.nexlogic.bukkit.modules.*;
 import io.nexstudios.nexlogic.bukkit.services.entity.EconomyBalanceEntity;
+import io.nexstudios.nexlogic.bukkit.services.entity.heads.HeadEntity;
 import io.nexstudios.nexlogic.bukkit.services.effects.bootstrap.TypeBuiltinService;
 import io.nexstudios.nexlogic.bukkit.services.effects.listeners.*;
 import io.nexstudios.nexlogic.bukkit.services.effects.executor.async.AsyncExecutorService;
-import io.nexstudios.nexlogic.bukkit.services.effects.command.LogicCommandService;
+import io.nexstudios.nexlogic.bukkit.services.command.LogicCommandService;
 import io.nexstudios.nexlogic.bukkit.services.effects.reload.ReloadService;
 import io.nexstudios.nexlogic.bukkit.services.entity.nexeconomy.*;
+import io.nexstudios.nexlogic.bukkit.services.heads.HeadService;
 import io.nexstudios.nexlogic.common.services.engine.DefaultLogicEngineService;
 import io.nexstudios.nexlogic.common.services.engine.LogicEngineService;
 import io.nexstudios.nexlogic.common.services.triggers.bus.TriggerBusService;
@@ -29,7 +30,6 @@ import io.nexstudios.nexlogic.common.services.triggers.register.DefaultTriggerRe
 import io.nexstudios.nexlogic.common.services.triggers.register.TriggerRegistrationService;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
 import io.nexstudios.serviceregistry.di.ServiceModule;
-import net.minecraft.server.dialog.DialogListDialog;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -46,8 +46,6 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     services.install(new LanguageServiceModule(this));
     // install Dialog Service
     services.install(new DialogService());
-    // install Head Service
-    services.install(new HeadServiceModule(this));
     // install DatabaseService
     services.install(new DatabaseServiceModul(this));
     // install ItemService
@@ -57,11 +55,11 @@ public final class NexLogicPlugin extends NexPaperPlugin {
 
     // install internal ServiceModules
     List<ServiceModule> modules = List.of(
-        new CoreModule(),
-        new PlaceholderModule(),
-        new EffectsModule(),
-        new BukkitRuntimeModule(),
-        new UtilityModule()
+        new CoreServiceModule(),
+        new PlaceholderServiceModule(),
+        new EffectServiceModule(),
+        new BukkitRuntimeServiceModule(),
+        new UtilityServiceModule()
     );
     services.installAll(modules);
 
@@ -78,6 +76,8 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     services().install(new HookServiceModule());
     services().install(new MenuServiceModule(this));
     initDatabase(services());
+    services().install(new HeadServiceModule());
+    services().getService(HeadService.class).warmUp().join();
 
     services().getService(CommandService.class).registerAll(
         List.of(
@@ -85,12 +85,7 @@ public final class NexLogicPlugin extends NexPaperPlugin {
         )
     );
 
-    ExampleMainMenu.register(services());
-    ExamplePagedMenu.register(services());
-    ExampleControlsPaged.register(services());
-
     services().getService(TriggerListenerService.class).registerAll();
-
     services().getService(TypeBuiltinService.class).registerAll();
 
     LogicEngineService engine = services().getService(LogicEngineService.class);
@@ -119,6 +114,7 @@ public final class NexLogicPlugin extends NexPaperPlugin {
 
   private void initDatabase(ServiceAccessor services) {
     HibernateMappingContributionService mapping = services.getService(HibernateMappingContributionService.class);
+    mapping.contribute(this, HeadEntity.class);
     mapping.contribute(this, EconomyBalanceEntity.class);
     mapping.contribute(this, BankMemberEntity.class);
     mapping.contribute(this, BankInviteEntity.class);

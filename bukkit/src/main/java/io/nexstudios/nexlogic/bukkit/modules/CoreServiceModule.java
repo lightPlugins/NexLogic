@@ -11,7 +11,7 @@ import io.nexstudios.nexlogic.common.services.platform.PlatformPluginService;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
 import io.nexstudios.serviceregistry.di.ServiceModule;
 
-public final class CoreModule implements ServiceModule {
+public final class CoreServiceModule implements ServiceModule {
 
   @Override
   public void install(ServiceAccessor services) {

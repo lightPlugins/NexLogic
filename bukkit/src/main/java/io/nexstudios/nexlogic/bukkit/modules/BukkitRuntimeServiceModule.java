@@ -2,7 +2,7 @@ package io.nexstudios.nexlogic.bukkit.modules;
 
 import io.nexstudios.nexlogic.bukkit.services.effects.blocks.PlayerPlacedBlockTrackerService;
 import io.nexstudios.nexlogic.bukkit.services.effects.bootstrap.TypeBuiltinService;
-import io.nexstudios.nexlogic.bukkit.services.effects.command.LogicCommandService;
+import io.nexstudios.nexlogic.bukkit.services.command.LogicCommandService;
 import io.nexstudios.nexlogic.bukkit.services.effects.config.ConfigPathService;
 import io.nexstudios.nexlogic.bukkit.services.effects.config.DefaultConfigPathService;
 import io.nexstudios.nexlogic.bukkit.services.effects.context.BukkitContextResolverService;
@@ -24,7 +24,7 @@ import io.nexstudios.nexlogic.bukkit.services.effects.reload.ReloadService;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
 import io.nexstudios.serviceregistry.di.ServiceModule;
 
-public final class BukkitRuntimeModule implements ServiceModule {
+public final class BukkitRuntimeServiceModule implements ServiceModule {
 
   @Override
   public void install(ServiceAccessor services) {

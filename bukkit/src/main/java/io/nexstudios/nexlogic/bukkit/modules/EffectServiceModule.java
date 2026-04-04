@@ -29,7 +29,7 @@ import io.nexstudios.nexlogic.common.services.triggers.schema.TriggerContextSche
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
 import io.nexstudios.serviceregistry.di.ServiceModule;
 
-public final class EffectsModule implements ServiceModule {
+public final class EffectServiceModule implements ServiceModule {
 
   @Override
   public void install(ServiceAccessor services) {
