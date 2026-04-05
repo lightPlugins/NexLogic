@@ -1,9 +1,9 @@
 enabled: true
 
 effects:
-  - id: log
+  - id: give-item
     args:
-      message: "Some Test Placeholder: %nexlogic:some_placeholder%"
+      item: "minecraft:diamond_sword"
     trigger:
       - id: block-break
         conditions:

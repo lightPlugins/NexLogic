@@ -8,6 +8,7 @@ plugins {
 dependencies {
     implementation(project(":common"))
     paperweight.paperDevBundle("1.21.11-R0.1-SNAPSHOT")
+    compileOnly("net.kyori:adventure-text-serializer-ansi:4.26.1")
 
     // nex internal module services
     implementation("io.nexstudios.itemservice:bukkit:v1.0.0")
