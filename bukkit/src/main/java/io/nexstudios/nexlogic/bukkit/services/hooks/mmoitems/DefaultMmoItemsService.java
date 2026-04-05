@@ -30,7 +30,7 @@ public final class DefaultMmoItemsService implements MmoItemsService, Service {
 
     MMOItem mmoItem = MMOItems.plugin.getMMOItem(MMOItems.plugin.getTypes().get(type), id);
     if(mmoItem == null) {
-      logger.logger().warning("Could not find MMOItem with id " + id + " for type " + type);
+      logger.logger().warning("Could not find MMOItem with id '" + id + "' for type '" + type + "'");
       return Optional.empty();
     }
     return Optional.of(mmoItem.newBuilder().getItemStack());
@@ -43,7 +43,7 @@ public final class DefaultMmoItemsService implements MmoItemsService, Service {
     boolean exists = tiers.has(tier.toUpperCase(Locale.ROOT));
 
     if(!exists) {
-      logger.logger().warning("Could not find tier " + tier.toUpperCase(Locale.ROOT) + " for item " + type + ":" + id);
+      logger.logger().warning("Could not find tier '" + tier.toUpperCase(Locale.ROOT) + "' for item '" + type + ":" + id + "'");
       return Optional.empty();
     }
 
@@ -56,7 +56,7 @@ public final class DefaultMmoItemsService implements MmoItemsService, Service {
         itemTier);
 
     if(stack == null) {
-      logger.logger().warning("Could not find itemstack for item " + id + " for type " + type + " with level " + level + " and tier " + tier.toUpperCase(Locale.ROOT));
+      logger.logger().warning("Could not find itemstack for item '" + id + "' for type '" + type + "' with level '" + level + "' and tier '" + tier.toUpperCase(Locale.ROOT) + "'");
       return Optional.empty();
     }
 
