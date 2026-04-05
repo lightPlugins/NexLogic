@@ -5,6 +5,7 @@ import io.nexstudios.nexlogic.bukkit.effects.conditions.HasAgeConditionType;
 import io.nexstudios.nexlogic.bukkit.effects.conditions.PermissionConditionType;
 import io.nexstudios.nexlogic.bukkit.effects.conditions.PlayerPlacedConditionType;
 import io.nexstudios.nexlogic.bukkit.effects.effects.GiveItemEffectType;
+import io.nexstudios.nexlogic.bukkit.effects.effects.GiveHeadEffectType;
 import io.nexstudios.nexlogic.bukkit.effects.effects.LogEffectType;
 import io.nexstudios.nexlogic.bukkit.effects.effects.MessageEffectType;
 import io.nexstudios.nexlogic.bukkit.effects.filters.BlocksFilterType;
@@ -46,6 +47,7 @@ public final class TypeBuiltinService implements Service {
       r.registerEffectType(MessageEffectType.class);
       r.registerEffectType(LogEffectType.class);
       r.registerEffectType(GiveItemEffectType.class);
+      r.registerEffectType(GiveHeadEffectType.class);
     });
   }
 
