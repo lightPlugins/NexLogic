@@ -1,0 +1,63 @@
+# Example item configuration for NexLogic
+#
+# Notes:
+# - `item` accepts namespaced item IDs.
+# - If no namespace is provided, `minecraft:` is assumed.
+# - Third-party providers only work when the matching plugin/service is installed.
+#   Examples: `minecraft`, `nexo`, `mmoitems`.
+
+items:
+  vanilla-legendary-sword:
+    item: 'minecraft:diamond_sword'
+    amount: 1
+
+    # Basic item meta
+    display-name: '&bLegendary Blade'
+    lore:
+      - '&7Example item for the NexLogic item builder.'
+      - '&7This section shows the most common item meta options.'
+      - '&7The `item` value may also be written as `diamond_sword`.'
+
+    # Item state / appearance
+    unbreakable: true
+    custom-model-data: 123456
+    glowing: true
+
+    # Bukkit item flags (hide enchantments, attributes, etc.)
+    item-flags:
+      - HIDE_ENCHANTS
+      - HIDE_ATTRIBUTES
+      - HIDE_UNBREAKABLE
+
+    # Enchantments are provided as a list of objects.
+    # Use namespaced ids so both vanilla and third-party enchantments can be addressed.
+    enchantments:
+      - id: "minecraft:sharpness"
+        level: 5
+
+    # Attributes are provided as a list of objects.
+    # Each attribute entry can define the operation, amount, and equipment group.
+    attributes:
+      - id: "minecraft:generic_attack_damage"
+        operation: ADD_NUMBER
+        amount: 12.0
+        group: HAND
+
+  nexo-item-example:
+    # Third-party item example (requires the Nexo provider to be available)
+    item: 'nexo:dragon_slayer'
+    amount: 1
+    display-name: '&6Nexo Weapon Example'
+    lore:
+      - '&7This item is resolved by the Nexo item provider.'
+      - '&7Use the provider namespace followed by the item id.'
+
+  mmoitems-example:
+    # Third-party item example (requires the MMOItems provider to be available)
+    # The exact format depends on the provider implementation.
+    item: 'mmoitems:sword:dark_blade:5:legendary'
+    amount: 1
+    display-name: '&5MMOItems Weapon Example'
+    lore:
+      - '&7This item is resolved by the MMOItems item provider.'
+      - '&7Adjust the namespace and syntax to match the provider.'

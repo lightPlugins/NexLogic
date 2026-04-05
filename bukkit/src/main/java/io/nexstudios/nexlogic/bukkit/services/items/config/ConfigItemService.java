@@ -1,4 +1,4 @@
-package io.nexstudios.nexlogic.bukkit.services.config;
+package io.nexstudios.nexlogic.bukkit.services.items.config;
 
 import io.nexstudios.configservice.config.ConfigurationSection;
 import io.nexstudios.serviceregistry.di.Service;
