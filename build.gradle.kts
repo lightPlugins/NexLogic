@@ -15,6 +15,7 @@ allprojects {
         maven("https://jitpack.io")
         maven("https://repo.nexomc.com/releases")
         maven("https://repo.glaremasters.me/repository/towny/")
+        maven("https://nexus.phoenixdevt.fr/repository/maven-public/")
     }
 }
 

@@ -6,6 +6,8 @@ import io.nexstudios.nexlogic.bukkit.services.effects.entities.DefaultEntityKeyS
 import io.nexstudios.nexlogic.bukkit.services.effects.entities.EntityKeyService;
 import io.nexstudios.nexlogic.bukkit.services.effects.logging.BukkitLoggerService;
 import io.nexstudios.nexlogic.bukkit.services.effects.platform.BukkitPlatformPluginService;
+import io.nexstudios.nexlogic.bukkit.services.items.DefaultItemProviderService;
+import io.nexstudios.nexlogic.bukkit.services.items.ItemProviderService;
 import io.nexstudios.nexlogic.common.services.logging.LoggerService;
 import io.nexstudios.nexlogic.common.services.platform.PlatformPluginService;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
@@ -20,5 +22,6 @@ public final class CoreServiceModule implements ServiceModule {
 
     services.register(BlockKeyService.class, DefaultBlockKeyService.class);
     services.register(EntityKeyService.class, DefaultEntityKeyService.class);
+    services.register(ItemProviderService.class, DefaultItemProviderService.class);
   }
 }
