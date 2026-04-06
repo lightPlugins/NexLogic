@@ -3,6 +3,7 @@ package io.nexstudios.nexlogic.bukkit.services.items.config;
 import io.nexstudios.configservice.config.ConfigurationSection;
 import io.nexstudios.itemservice.bukkit.service.item.ItemService;
 import io.nexstudios.nexlogic.bukkit.services.items.ItemProviderService;
+import io.nexstudios.nexlogic.common.services.logging.LoggerService;
 import io.nexstudios.serviceregistry.di.Dependencies;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
 import io.papermc.paper.registry.RegistryAccess;
@@ -28,7 +29,8 @@ import java.util.Optional;
 
 @Dependencies({
     ItemService.class,
-    ItemProviderService.class
+    ItemProviderService.class,
+    LoggerService.class
 })
 public final class DefaultConfigItemService implements ConfigItemService {
 
@@ -38,12 +40,14 @@ public final class DefaultConfigItemService implements ConfigItemService {
   private final Registry<@NotNull Attribute> attributeRegistry;
   private final ItemService itemService;
   private final ItemProviderService itemProviderService;
+  private final LoggerService loggerService;
 
   public DefaultConfigItemService(ServiceAccessor accessor) {
     this.enchantmentRegistry = RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT);
     this.attributeRegistry = RegistryAccess.registryAccess().getRegistry(RegistryKey.ATTRIBUTE);
     this.itemService = accessor.getService(ItemService.class);
     this.itemProviderService = accessor.getService(ItemProviderService.class);
+    this.loggerService = accessor.getService(LoggerService.class);
   }
 
   @Override
@@ -87,7 +91,13 @@ public final class DefaultConfigItemService implements ConfigItemService {
     if (hasKey(section, "lore")) {
       List<String> lore = readStringList(section, "lore");
       if (!lore.isEmpty()) {
-        builder.lore(lore.stream().map(DefaultConfigItemService::toComponent).toArray(Component[]::new));
+        builder.lore(l -> {
+          for(String loreLine : lore) {
+            l.line(loreLine);
+            loggerService.logger().info("Lore line added " + loreLine);
+          }
+          l.build();
+        });
       }
     }
 
