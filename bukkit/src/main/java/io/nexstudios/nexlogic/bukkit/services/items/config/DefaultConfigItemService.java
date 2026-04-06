@@ -3,13 +3,10 @@ package io.nexstudios.nexlogic.bukkit.services.items.config;
 import io.nexstudios.configservice.config.ConfigurationSection;
 import io.nexstudios.itemservice.bukkit.service.item.ItemService;
 import io.nexstudios.nexlogic.bukkit.services.items.ItemProviderService;
-import io.nexstudios.nexlogic.common.services.logging.LoggerService;
 import io.nexstudios.serviceregistry.di.Dependencies;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -29,25 +26,20 @@ import java.util.Optional;
 
 @Dependencies({
     ItemService.class,
-    ItemProviderService.class,
-    LoggerService.class
+    ItemProviderService.class
 })
 public final class DefaultConfigItemService implements ConfigItemService {
-
-  private static final LegacyComponentSerializer LEGACY = LegacyComponentSerializer.legacyAmpersand();
 
   private final Registry<@NotNull Enchantment> enchantmentRegistry;
   private final Registry<@NotNull Attribute> attributeRegistry;
   private final ItemService itemService;
   private final ItemProviderService itemProviderService;
-  private final LoggerService loggerService;
 
   public DefaultConfigItemService(ServiceAccessor accessor) {
     this.enchantmentRegistry = RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT);
     this.attributeRegistry = RegistryAccess.registryAccess().getRegistry(RegistryKey.ATTRIBUTE);
     this.itemService = accessor.getService(ItemService.class);
     this.itemProviderService = accessor.getService(ItemProviderService.class);
-    this.loggerService = accessor.getService(LoggerService.class);
   }
 
   @Override
@@ -83,22 +75,19 @@ public final class DefaultConfigItemService implements ConfigItemService {
 
     if (hasKey(section, "display-name")) {
       String displayName = section.getString("display-name", null);
-      if (displayName != null && !displayName.isBlank()) {
-        builder.name(toComponent(displayName));
+      if (displayName != null) {
+        builder.name(displayName);
       }
     }
 
     if (hasKey(section, "lore")) {
       List<String> lore = readStringList(section, "lore");
-      if (!lore.isEmpty()) {
-        builder.lore(l -> {
-          for(String loreLine : lore) {
-            l.line(loreLine);
-            loggerService.logger().info("Lore line added " + loreLine);
-          }
-          l.build();
-        });
-      }
+      builder.lore(l -> {
+        for(String loreLine : lore) {
+          l.line(loreLine);
+        }
+        l.build();
+      });
     }
 
     if (hasKey(section, "unbreakable")) {
@@ -336,7 +325,7 @@ public final class DefaultConfigItemService implements ConfigItemService {
 
     if (raw instanceof List<?> list) {
       for (Object element : list) {
-        if (element instanceof String string && !string.isBlank()) {
+        if (element instanceof String string) {
           out.add(string);
           continue;
         }
@@ -364,10 +353,6 @@ public final class DefaultConfigItemService implements ConfigItemService {
     }
 
     return List.copyOf(out);
-  }
-
-  private static Component toComponent(String input) {
-    return LEGACY.deserialize(input == null ? "" : input);
   }
 
   private static boolean hasKey(ConfigurationSection section, String key) {
