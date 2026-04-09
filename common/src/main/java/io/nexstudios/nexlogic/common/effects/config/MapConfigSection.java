@@ -6,6 +6,11 @@ public final class MapConfigSection implements ConfigSection {
 
   public static final MapConfigSection EMPTY = new MapConfigSection(Map.of());
 
+  public static MapConfigSection of(Map<String, Object> root) {
+    if (root == null || root.isEmpty()) return EMPTY;
+    return new MapConfigSection(root);
+  }
+
   private final Map<String, Object> root;
 
   public MapConfigSection(Map<String, Object> root) {
