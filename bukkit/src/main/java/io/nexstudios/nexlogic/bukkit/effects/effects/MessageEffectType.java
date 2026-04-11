@@ -45,7 +45,7 @@ public final class MessageEffectType implements EffectTypeService {
 
   @Override
   public EffectInstance create(ConfigSection args) {
-    String message = args == null ? "" : args.getString("message", "");
+    String message = args == null ? "No Message parameter Found!" : args.getString("message", "No Message parameter Found!");
     boolean withPrefix = args != null && args.getBoolean("with-prefix", false);
     String configPath = args == null ? null : args.getString("config-path", null);
 
