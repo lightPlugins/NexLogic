@@ -2,6 +2,7 @@ package io.nexstudios.nexlogic.bukkit.services.items.config;
 
 import io.nexstudios.configservice.config.ConfigurationSection;
 import io.nexstudios.itemservice.bukkit.service.item.ItemService;
+import io.nexstudios.languageservice.service.language.LanguageService;
 import io.nexstudios.nexlogic.bukkit.services.items.ItemProviderService;
 import io.nexstudios.serviceregistry.di.Dependencies;
 import io.nexstudios.serviceregistry.di.ServiceAccessor;
@@ -16,6 +17,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -44,6 +46,11 @@ public final class DefaultConfigItemService implements ConfigItemService {
 
   @Override
   public Optional<ItemStack> convertSectionToItem(ConfigurationSection section) {
+    return convertSectionToItem(section, null, null);
+  }
+
+  @Override
+  public Optional<ItemStack> convertSectionToItem(ConfigurationSection section, LanguageService languageService, Player player) {
     if (section == null) {
       return Optional.empty();
     }
@@ -76,18 +83,21 @@ public final class DefaultConfigItemService implements ConfigItemService {
     if (hasKey(section, "display-name")) {
       String displayName = section.getString("display-name", null);
       if (displayName != null) {
-        builder.name(displayName);
+        resolveConfiguredText(displayName, languageService, player).ifPresent(builder::name);
       }
     }
 
     if (hasKey(section, "lore")) {
       List<String> lore = readStringList(section, "lore");
-      builder.lore(l -> {
-        for(String loreLine : lore) {
-          l.line(loreLine);
-        }
-        l.build();
-      });
+      List<String> resolvedLore = resolveConfiguredLore(lore, languageService, player);
+      if (!resolvedLore.isEmpty()) {
+        builder.lore(l -> {
+          for (String loreLine : resolvedLore) {
+            l.line(loreLine);
+          }
+          l.build();
+        });
+      }
     }
 
     if (hasKey(section, "unbreakable")) {
@@ -248,6 +258,81 @@ public final class DefaultConfigItemService implements ConfigItemService {
     EquipmentSlotGroup group = parseGroup(entry.getString("group", "HAND"));
 
     return Optional.of(new ConfigAttribute(attribute, operation, amount, group));
+  }
+
+  private Optional<String> resolveConfiguredText(String rawText, LanguageService languageService, Player player) {
+    if (rawText == null) {
+      return Optional.empty();
+    }
+
+    String trimmed = rawText.trim();
+    if (!isLanguageReference(trimmed) || languageService == null || player == null) {
+      return trimmed.isEmpty() ? Optional.empty() : Optional.of(rawText);
+    }
+
+    String key = languageKey(trimmed);
+    if (key.isBlank()) {
+      return Optional.of(rawText);
+    }
+
+    List<String> translations = languageService.getTranslation(player, key);
+    if (translations != null) {
+      for (String translation : translations) {
+        if (translation != null && !translation.isBlank()) {
+          return Optional.of(translation);
+        }
+      }
+    }
+
+    return Optional.of(rawText);
+  }
+
+  private List<String> resolveConfiguredLore(List<String> rawLore, LanguageService languageService, Player player) {
+    if (rawLore == null || rawLore.isEmpty()) {
+      return List.of();
+    }
+
+    List<String> resolved = new ArrayList<>();
+
+    for (String line : rawLore) {
+      if (line == null) {
+        continue;
+      }
+
+      String trimmed = line.trim();
+      if (isLanguageReference(trimmed) && languageService != null && player != null) {
+        String key = languageKey(trimmed);
+        if (!key.isBlank()) {
+          List<String> translations = languageService.getTranslation(player, key);
+          if (translations != null && !translations.isEmpty()) {
+            for (String translation : translations) {
+              if (translation != null && !translation.isBlank()) {
+                resolved.add(translation);
+              }
+            }
+            continue;
+          }
+        }
+      }
+
+      if (!trimmed.isEmpty()) {
+        resolved.add(line);
+      }
+    }
+
+    return List.copyOf(resolved);
+  }
+
+  private static boolean isLanguageReference(String text) {
+    return text != null && text.startsWith("language:");
+  }
+
+  private static String languageKey(String text) {
+    if (text == null || !text.startsWith("language:")) {
+      return "";
+    }
+
+    return text.substring("language:".length()).trim();
   }
 
 
