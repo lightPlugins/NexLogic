@@ -17,7 +17,7 @@ import java.util.Optional;
 @Dependencies({
     LoggerService.class
 })
-public final class DefaultMmoItemsService implements MmoItemsService, Service {
+public final class DefaultMmoItemsService implements MmoItemsService {
 
   private final LoggerService logger;
 

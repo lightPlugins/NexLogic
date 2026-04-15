@@ -12,6 +12,9 @@ import io.nexstudios.dialogservice.DialogService;
 import io.nexstudios.framework.paper.NexPaperPlugin;
 import io.nexstudios.itemservice.bukkit.ItemServiceModule;
 import io.nexstudios.languageservice.LanguageServiceModule;
+import io.nexstudios.menuservice.MenuServiceModule;
+import io.nexstudios.menuservice.api.MenuRegistry;
+import io.nexstudios.menuservice.demo.definition.DemoMenuDefinition;
 import io.nexstudios.nexlogic.bukkit.modules.*;
 import io.nexstudios.nexlogic.bukkit.services.entity.EconomyBalanceEntity;
 import io.nexstudios.nexlogic.bukkit.services.entity.heads.HeadEntity;
@@ -73,6 +76,11 @@ public final class NexLogicPlugin extends NexPaperPlugin {
   protected void start() {
     getLogger().info("NexLogic is starting...");
     services().install(new HookServiceModule());
+    services().install(new MenuServiceModule(this));
+
+    MenuRegistry registry = services().getService(MenuRegistry.class);
+    registry.register(new DemoMenuDefinition());
+
     // services().install(new MenuServiceModule(this));
     initDatabase(services());
     services().install(new HeadServiceModule());
