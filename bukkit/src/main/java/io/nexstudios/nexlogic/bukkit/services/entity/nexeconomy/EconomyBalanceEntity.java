@@ -1,4 +1,4 @@
-package io.nexstudios.nexlogic.bukkit.services.entity;
+package io.nexstudios.nexlogic.bukkit.services.entity.nexeconomy;
 
 import jakarta.persistence.*;
 import lombok.*;

@@ -16,7 +16,7 @@ import io.nexstudios.menuservice.MenuServiceModule;
 import io.nexstudios.menuservice.api.MenuRegistry;
 import io.nexstudios.menuservice.demo.definition.DemoMenuDefinition;
 import io.nexstudios.nexlogic.bukkit.modules.*;
-import io.nexstudios.nexlogic.bukkit.services.entity.EconomyBalanceEntity;
+import io.nexstudios.nexlogic.bukkit.services.entity.nexeconomy.EconomyBalanceEntity;
 import io.nexstudios.nexlogic.bukkit.services.entity.heads.HeadEntity;
 import io.nexstudios.nexlogic.bukkit.services.effects.bootstrap.TypeBuiltinService;
 import io.nexstudios.nexlogic.bukkit.services.effects.listeners.*;
@@ -81,7 +81,6 @@ public final class NexLogicPlugin extends NexPaperPlugin {
     MenuRegistry registry = services().getService(MenuRegistry.class);
     registry.register(new DemoMenuDefinition());
 
-    // services().install(new MenuServiceModule(this));
     initDatabase(services());
     services().install(new HeadServiceModule());
     services().getService(HeadService.class).warmUpSync();
